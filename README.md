@@ -134,27 +134,59 @@ to the resource and action will be rendered. See the next section for a more
 in-depth explanation.
 
 
-### The Action Renderer
+### Renderers
 
-When you wrap a method with `@action`, it does more than just declare it as an
-action. An action actually comes in two parts: one part does the processing, the
-other returns a response to the client. This allows for transparent content
-negotiation. TODO: complete renderer documentation
+An action actually comes in two parts: one part does the processing, the other
+returns a response to the client. This allows for transparent content
+negotiation, and means you never have to write a separate ‘API’ for your site.
+
+Usage is as follows:
 
     class User(Resource):
+        
+        # ... snip! ...
         
         @action
         def show(self, username):
             self.user = get_object_or_404(User, username=username)
         
-        @show.render.html
-        def show(self):
-            # This is the default HTML-rendering behavior.
-            return render_to_response("user/show.html", {
-                'self': self
-            }, context_instance=RequestContext(self.request))
-        
         @show.render.json
         def show(self):
             return HttpResponse(content=simplejson.dumps(self.user.to_dict()),
                                 mimetype='application/json')
+
+When `show()` is called by a request, the main body of the action is first run.
+If this does not return a `django.http.HttpResponse` outright, the action will
+perform content negotiation, to decide which renderer to use. In most
+circumstances, this will be `html`. The default behavior of the `html` renderer
+looks something like this:
+
+    def html_renderer(action_instance, resource_instance, resource_class):
+        resource_name = resource_class.__name__
+        if resource_name.endswith("Resource"):
+            resource_name = resource_name[:-8]
+        resource_name = camel_to_underscore(resource_name)
+        
+        action_name = action_instance.method.__name__
+        
+        template_path_prefix = getattr(resource_class, 'template_path_prefix', "")
+        template_name = "%s%s/%s.html" % (template_path_prefix, resource_name, action_name)
+        
+        return render_to_response(template_name, {
+          'self': resource_instance
+        }, context_instance=RequestContext(resource_instance.request))
+
+You can define additional renderers for a single action using the decoration
+shortcut (`@<action_name>.render.<format>`) as seen above; since content
+negotiation is based on mimetypes, a global `dict` mapping shortcodes to full
+mimetype strings is kept under `dagny.mimetypes.MIMETYPES`. You can define your
+own:
+
+    from dagny.mimetypes import MIMETYPES
+    
+    MIMETYPES['rss'] = 'application/rss+xml'
+    MIMETYPES['png'] = 'image/png'
+    MIMETYPES.setdefault('json', 'text/javascript')
+
+There is already a relatively extensive list of types defined; see the relevant
+file for more information.
