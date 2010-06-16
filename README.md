@@ -138,13 +138,12 @@ in-depth explanation.
 
 An action actually comes in two parts: one part does the processing, the other
 returns a response to the client. This allows for transparent content
-negotiation, and means you never have to write a separate ‘API’ for your site.
+negotiation, and means you never have to write a separate ‘API’ for your site,
+or call `render_to_response()` at the bottom of every view function.
 
 Usage is as follows:
 
     class User(Resource):
-        
-        # ... snip! ...
         
         @action
         def show(self, username):
@@ -155,26 +154,39 @@ Usage is as follows:
             return HttpResponse(content=simplejson.dumps(self.user.to_dict()),
                                 mimetype='application/json')
 
+Now, if you fetch `/users/zacharyvoase/`, you’ll see the result of rendering the
+`"users/show.html"` template as a HTML page. If you fetch
+`/users/zacharyvoase/?format=json`, however, you’ll get a JSON representation of
+that user. Dagny also uses `webob.acceptparse`, so passing an
+`Accept: application/json` header will result in JSON output, too.
+
+
+#### How Renderers Work
+
 When `show()` is called by a request, the main body of the action is first run.
-If this does not return a `django.http.HttpResponse` outright, the action will
-perform content negotiation, to decide which renderer to use. In most
-circumstances, this will be `html`. The default behavior of the `html` renderer
-looks something like this:
+If this does not return a `HttpResponse` outright, the action will perform
+content negotiation, to decide which renderer to use. In most circumstances,
+this will be `html`. The default behavior of the `html` renderer looks something
+like this:
 
-    def html_renderer(action, resource):
-        template_path_prefix = getattr(resource_instance, 'template_path_prefix', "")
-        resource_label = camel_to_underscore(resource_name(resource))
-        template_name = "%s%s/%s.html" % (template_path_prefix, resource_label, action.name)
+    class User(Resource):
         
-        return render_to_response(template_name, {
-          'self': resource
-        }, context_instance=RequestContext(resource.request))
+        # ... snip! ...
+        
+        @show.render.html
+        def show(self):
+            return render_to_response("user/show.html", {
+                'self': self
+            }, context_instance=RequestContext(self.request))
 
-You can define additional renderers for a single action using the decoration
-shortcut (`@<action_name>.render.<format>`) as seen above; since content
-negotiation is based on mimetypes, a global `dict` mapping shortcodes to full
-mimetype strings is kept under `dagny.conneg.MIMETYPES`. You can define your
-own:
+
+#### Additional MIME types
+
+Additional renderers for a single action are defined using the decoration syntax
+(`@<action_name>.render.<format>`) as seen above, but since content negotiation
+is based on mimetypes, Dagny keeps a global `dict` mapping these **shortcodes**
+to full mimetype strings (as `dagny.conneg.MIMETYPES`). You can create your own
+shortcodes, and use them in resource definitions:
 
     from dagny.conneg import MIMETYPES
     
@@ -183,4 +195,41 @@ own:
     MIMETYPES.setdefault('json', 'text/javascript')
 
 There is already a relatively extensive list of types defined; see the
-`dagny.conneg` module for more information.
+[`dagny.conneg` module][dagny.conneg] for more information.
+
+  [dagny.conneg]: http://github.com/zacharyvoase/dagny/blob/master/src/dagny/conneg.py
+
+
+#### Generic Renderers
+
+Dagny also supports **generic renderers**; these are type-specific renderers
+attached to the `dagny.renderer.Renderer` class (or a subclass thereof) which
+will be available on *all* actions by default. These renderers are simple
+functions which take both the action instance and the resource instance. For
+example, the HTML renderer (which every action has as standard) looks like:
+
+    from dagny.renderer import Renderer
+    from dagny.utils import camel_to_underscore, resource_name
+    
+    from django.shortcuts import render_to_response
+    from django.template import RequestContext
+    
+    @Renderer.generic('html')
+    def render_html(action, resource):
+        template_path_prefix = getattr(resource, 'template_path_prefix', "")
+        resource_label = camel_to_underscore(resource_name(resource))
+        template_name = "%s%s/%s.html" % (template_path_prefix, resource_label, action.name)
+        
+        return render_to_response(template_name, {
+          'self': resource
+        }, context_instance=RequestContext(resource.request))
+
+You can also *remove* a generic renderer from a single action like so:
+
+    class User(Resource):
+    
+        @action
+        def show(self, username):
+            self.user = get_object_or_404(User, username=username)
+        
+        del show.render['html']
