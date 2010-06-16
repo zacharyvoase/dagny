@@ -1,0 +1,6 @@
+include distribute_setup.py
+include nose.cfg
+include REQUIREMENTS
+include REQUIREMENTS.*
+include README.md
+include UNLICENSE
