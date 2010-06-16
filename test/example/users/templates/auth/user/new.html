@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <form method="post" action="{% url User#index %}">
+    {% csrf_token %}
+    
+    {{ self.form.errors.as_ul }}
+    {{ self.form.as_ul }}
+    
+    <input type="submit" value="Submit" />
+  </form>
+{% endblock %}
