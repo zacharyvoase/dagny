@@ -17,7 +17,8 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(PROJECT_ROOT)
 
 DB_DIR = os.path.join(PROJECT_ROOT, 'db')
-os.makedirs(DB_DIR)
+if not os.path.exists(DB_DIR):
+    os.makedirs(DB_DIR)
 
 DATABASES = {
     'default': {
