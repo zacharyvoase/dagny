@@ -12,6 +12,26 @@ and code listings in this README may not work or may even be purely speculative
 explorations of what the final API might look like. **You have been warned.**
 
 
+## Example Project
+
+The rest of this README is a pretty thorough introduction to Dagny’s concepts
+and API. If you’d rather dive right in, there’s an [example project][] which
+showcases a user management app, built in very few lines of code on top of the
+standard `django.contrib.auth` app.
+
+  [example project]: http://github.com/zacharyvoase/dagny/tree/master/example/
+
+To get it running:
+
+    git clone 'git://github.com/zacharyvoase/dagny.git'
+    cd dagny/example/
+    ./manage.py syncdb  # Creates db/development.sqlite3
+    ./manage.py test users  # Runs all the tests
+    ./manage.py runserver
+
+Then just visit <http://localhost:8000/users/> to see it in action!
+
+
 ## Resources
 
 Dagny’s fundamental unit is the **resource**. A resource is identified by, and
