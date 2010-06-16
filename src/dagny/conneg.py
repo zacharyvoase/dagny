@@ -1,6 +1,17 @@
 # -*- coding: utf-8 -*-
 
-"""Helpers and global mappings for content negotiation."""
+"""
+Helpers and global mappings for content negotiation.
+
+If you want to define a custom mimetype shortcode, add it to the `MIMETYPES`
+dictionary in this module (without the leading '.' character). For example:
+
+    from dagny.conneg import MIMETYPES
+    
+    MIMETYPES['png'] = 'image/png'
+    MIMETYPES['json'] = 'text/javascript'
+
+"""
 
 import mimetypes
 
@@ -17,6 +28,7 @@ MIMETYPES = {
 }
 
 
+# Load all extension => mimetype mappings from `mimetypes` stdlib module.
 for ext, mimetype in mimetypes.types_map.iteritems():
     shortcode = ext.lstrip(".").replace(".", "_")  # .tar.bz2 => tar_bz2
     MIMETYPES[shortcode] = mimetype
