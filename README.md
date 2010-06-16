@@ -106,6 +106,60 @@ To point to a singular resource, use the `resource()` helper:
 and `edit`, and doesn’t take an `id` parameter of any sort.
 
 
+#### Reversing URLs
+
+`resource()` and `resources()` both attach names to the patterns they generate.
+This allows you to use the `{% url %}` templatetag, for example:
+
+    A user creation form:
+    <form method="post" action="{% url myapp.resources.User#index %}">
+      ...
+    </form>
+    
+    Signup link:
+    <a href="{% url myapp.resources.User#new %}">Sign Up!</a>
+    
+    A user profile link:
+    <a href="{% url myapp.resources.User#show user.id %}">View user</a>
+    
+    A user editing link:
+    <a href="{% url myapp.resources.User#edit user.id %}">Edit user</a>
+    
+    A user editing form:
+    <form method="post" action="{% url myapp.resources.User#show user.id %}">
+      ...
+    </form>
+
+You can also write some nice `get_absolute_url()` methods:
+
+    from django.db import models
+    
+    class User(models.Model):
+        # ... snip! ...
+        
+        @models.permalink
+        def get_absolute_url(self):
+            return ("myapp.resources.User#show", self.id)
+
+Of course, having to write out the full path to the resource is quite
+cumbersome, so you can give a `name` keyword argument to either of the URL
+helpers, and use the shortcut:
+
+    # In urls.py:
+    urlpatterns = patterns('',
+        (r'^users/', resources('myapp.resources.User', name='User'))
+    )
+    
+    # In models.py:
+    class User(models.Model):
+        @models.permalink
+        def get_absolute_url(self):
+            return ("User#show", self.id)
+
+Likewise for the templates, and any calls to `django.shortcuts.redirect()` or
+`django.core.urlresolvers.reverse()`.
+
+
 ### Defining Resources
 
 Resources are subclasses of `dagny.Resource`. Actions are methods on these

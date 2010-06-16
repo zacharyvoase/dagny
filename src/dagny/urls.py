@@ -5,7 +5,7 @@ from django.conf.urls.defaults import include, patterns, url
 __all__ = ['resource']
 
 
-def resources(resource_name, id=r'\d+', actions=None):
+def resources(resource_name, id=r'\d+', actions=None, name=None):
     
     """
     Helper for connecting to resource collections from your URLconf.
@@ -16,7 +16,7 @@ def resources(resource_name, id=r'\d+', actions=None):
         from dagny.urls import resources
         
         urlpatterns = patterns('',
-            (r'^users/', resources('myapp.resources.User'))
+            (r'^users/', resources('myapp.resources.User', name='User'))
         )
     
     Remember not to terminate the regex with a `$` character; `resources()`
@@ -25,6 +25,9 @@ def resources(resource_name, id=r'\d+', actions=None):
     
     You also need to pass in the full identifier of your `Resource`, even if you
     specified a common prefix in the call to `patterns()`.
+    
+    The `name` parameter affects how you’ll do URL reversing; see the section
+    below on reversing for in-depth information.
     
     `resources()` generates 4 basic types of URI:
     
@@ -59,6 +62,41 @@ def resources(resource_name, id=r'\d+', actions=None):
     This is where the `actions` parameter becomes useful; if you're using slugs,
     you might want to use a different `new` URI, otherwise you'd need to check
     that no object had a slug of `'new'`.
+    
+    
+    ## Reversing
+    
+    `resources()` names all of the URLs it generates, which makes it easy for
+    you to use Django's existing helpers and templatetags for forms and links.
+    By default, the names are just the full identifier of your `Resource`, and
+    the particular action, separated by a hash. For example:
+    
+        class User(models.Model):
+            # ...
+            
+            @models.permalink
+            def get_absolute_url(self):
+                return ('myapp.resources.User#show', self.id)
+    
+    Or in templates:
+    
+        <form method="post" action="{% url myapp.resources.User#show user.id %}">
+            ...
+        </form>
+        
+        <a href="{% url myapp.resources.User#new %}">Sign Up</a>
+    
+    If you want to use shorter identifiers, just pass the `name` keyword
+    argument to `resources()`:
+    
+        urlpatterns = patterns('',
+            (r'^users/', resources('myapp.resources.User', name='User'))
+        )
+    
+    And now you can just use that as the prefix:
+    
+        <a href="{% url User#new %}">Sign Up</a>
+    
     """
     
     action_patterns = {
@@ -71,13 +109,18 @@ def resources(resource_name, id=r'\d+', actions=None):
     if actions is None:
         actions = ('index', 'new', 'show', 'edit')
     
+    if name is None:
+        name = resource_name
+    
     args = []
     for action in actions:
-        args.append(url(action_patterns[action], resource_name, {'action': action}))
+        args.append(url(action_patterns[action], resource_name,
+                        kwargs={'action': action},
+                        name=("%s#%s" % (name, action))))
     return include(patterns('', *args))
 
 
-def resource(resource_name, actions=None):
+def resource(resource_name, actions=None, name=None):
     
     """
     Helper for connecting to singular resources from your URLconf.
@@ -106,6 +149,18 @@ def resource(resource_name, actions=None):
             (r'^account/', resource('myapp.resources.User', actions=('show',)))
         )
     
+    The `name` parameter works in exactly the same way as with `resources()`:
+    
+        # urls.py:
+        
+        urlpatterns = patterns('',
+            (r'^account/', resource('myapp.resources.User', name="Account"))
+        )
+        
+        # account/show.html
+        
+        <a href="{% url Account#edit %}">Edit Account</a>
+    
     """
     
     action_patterns = {
@@ -117,7 +172,12 @@ def resource(resource_name, actions=None):
     if actions is None:
         actions = ('show', 'new', 'edit')
     
+    if name is None:
+        name = resource_name
+    
     args = []
     for args in actions:
-        args.append(url(action_patterns[action], resource_name, {'action': action}))
+        args.append(url(action_patterns[action], resource_name,
+                        kwargs={'action': action},
+                        name=("%s#%s" % (name, action))))
     return include(patterns('', *args))
