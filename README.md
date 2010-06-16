@@ -24,7 +24,10 @@ standard `django.contrib.auth` app.
 To get it running:
 
     git clone 'git://github.com/zacharyvoase/dagny.git'
-    cd dagny/example/
+    cd dagny/
+    pip install -r REQUIREMENTS  # Installs runtime requirements
+    pip install -r REQUIREMENTS.test  # Installs testing requirements
+    cd example/
     ./manage.py syncdb  # Creates db/development.sqlite3
     ./manage.py test users  # Runs all the tests
     ./manage.py runserver
