@@ -42,7 +42,7 @@ setup(
     author           = "Zachary Voase",
     author_email     = "z@zacharyvoase.com",
     url              = 'http://github.com/zacharyvoase/dagny',
-    description      = "Rails-style Resource-Oriented Architecture, for Django.",
+    description      = "Rails-style Resource-Oriented Architecture for Django.",
     packages         = find_packages(where='src'),
     package_dir      = {'': 'src'},
     install_requires = get_requirements(),
