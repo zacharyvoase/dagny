@@ -61,14 +61,10 @@ class Renderer(object):
         self._renderers = filter(None, self._renderers)
     
     def __call__(self, resource):
-        shortcode = None
+        shortcode = resource._get_format()
         accept_header = resource.request.META.get('HTTP_ACCEPT')
-        if accept_header:
-            shortcode = conneg.match_accept(accept_header, self._shortcodes())
-        if shortcode is None:
-            shortcode = resource._get_format()
-        if shortcode is None:
-            shortcode = 'html'
+        if shortcode is None and accept_header:
+            shortcode = conneg.match_accept(accept_header, self._shortcodes(), default='html')
         
         return self[shortcode](self._action, resource)
     
