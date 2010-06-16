@@ -98,8 +98,12 @@ class Renderer(object):
     be a valid Python identifier.
     """
     
-    def __init__(self):
-        self._backends = odict.odict()
+    def __init__(self, backends=None):
+        if backends is None:
+            backends = odict.odict()
+        else:
+            backends = backends.copy()
+        self._backends = backends
     
     def __getattr__(self, shortcode):
         
@@ -193,6 +197,9 @@ class Renderer(object):
         
         return BoundRenderer(action, backends=self._backends)
     
+    def _copy(self):
+        return type(self)(backends=self._backends)
+    
     ### <meta>
     #
     #   This chunk of code creates several proxy methods going through to
@@ -205,7 +212,7 @@ class Renderer(object):
     for method in ('__contains__', '__getitem__', '__setitem__', '__delitem__'):
         vars()[method] = proxy(method)
     
-    for method in ('clear', 'copy', 'get', 'items', 'iteritems', 'iterkeys',
+    for method in ('clear', 'get', 'items', 'iteritems', 'iterkeys',
                    'itervalues', 'keys', 'pop', 'popitem', 'ritems',
                    'riteritems', 'riterkeys', 'ritervalues', 'rkeys', 'rvalues',
                    'setdefault', 'sort', 'update', 'values'):
@@ -222,11 +229,8 @@ class Renderer(object):
 class BoundRenderer(Renderer):
     
     def __init__(self, action, backends=None):
+        super(BoundRenderer, self).__init__(backends=backends)
         self._action = action
-        if backends is not None:
-            self._backends = backends.copy()
-        else:
-            self._backends = odict.odict()
     
     def __repr__(self):
         return "<BoundRenderer on %r>" % (self._action,)
