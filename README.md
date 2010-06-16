@@ -161,20 +161,14 @@ perform content negotiation, to decide which renderer to use. In most
 circumstances, this will be `html`. The default behavior of the `html` renderer
 looks something like this:
 
-    def html_renderer(action_instance, resource_instance, resource_class):
-        resource_name = resource_class.__name__
-        if resource_name.endswith("Resource"):
-            resource_name = resource_name[:-8]
-        resource_name = camel_to_underscore(resource_name)
-        
-        action_name = action_instance.method.__name__
-        
-        template_path_prefix = getattr(resource_class, 'template_path_prefix', "")
-        template_name = "%s%s/%s.html" % (template_path_prefix, resource_name, action_name)
+    def html_renderer(action, resource):
+        template_path_prefix = getattr(resource_instance, 'template_path_prefix', "")
+        resource_label = camel_to_underscore(resource_name(resource))
+        template_name = "%s%s/%s.html" % (template_path_prefix, resource_label, action.name)
         
         return render_to_response(template_name, {
-          'self': resource_instance
-        }, context_instance=RequestContext(resource_instance.request))
+          'self': resource
+        }, context_instance=RequestContext(resource.request))
 
 You can define additional renderers for a single action using the decoration
 shortcut (`@<action_name>.render.<format>`) as seen above; since content
