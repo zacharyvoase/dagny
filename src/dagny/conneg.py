@@ -9,6 +9,7 @@ from webob.acceptparse import MIMEAccept
 __all__ = ['MIMETYPES', 'match_accept']
 
 
+# Maps renderer shortcodes => mimetypes.
 MIMETYPES = {
     'rss': 'application/rss+xml',
     'json': 'application/json',
@@ -17,13 +18,16 @@ MIMETYPES = {
 
 
 for ext, mimetype in mimetypes.types_map.iteritems():
-    ext = ext.lstrip(".").replace(".", "_")  # .tar.bz2 => tar_bz2
-    MIMETYPES[ext] = mimetype
-del ext, mimetype  # Clean up
+    shortcode = ext.lstrip(".").replace(".", "_")  # .tar.bz2 => tar_bz2
+    MIMETYPES[shortcode] = mimetype
+del ext, shortcode, mimetype  # Clean up
 
 
-def match_accept(accept_header, renderers, default='html'):
-    """Return the best match for an Accept header and a list of renderers."""
+def match_accept(header, shortcodes, default='html'):
+    """Match an Accept header against a list of renderer shortcodes."""
     
-    mapping = dict([(MIMETYPES[renderer], renderer) for renderer in renderers])
-    return mapping.get(MIMEAccept("Accept", accept_header).best_match(mapping.keys()), default)
+    types = map(MIMETYPES.__getitem__, shortcodes)
+    match = MIMEAccept("Accept", header).best_match(types)
+    if match:
+        return shortcodes[types.index(match)]
+    return default
