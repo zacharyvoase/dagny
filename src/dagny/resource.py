@@ -49,7 +49,7 @@ class Resource(View):
         else:
             raise Http404
     
-    def _get_format(self):
+    def _format(self):
         """Return a mimetype shortcode, in case there's no Accept header."""
         
         return self.request.GET.get('format')
