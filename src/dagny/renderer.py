@@ -7,7 +7,7 @@ import odict
 from dagny import conneg
 
 
-class SkipRenderer(Exception):
+class Skip(Exception):
     
     """
     Move on to the next renderer backend.
@@ -137,7 +137,7 @@ class Renderer(object):
         for shortcode in matches:
             try:
                 return self[shortcode](action, resource)
-            except SkipRenderer:
+            except Skip:
                 continue
         
         return not_acceptable(action, resource)
