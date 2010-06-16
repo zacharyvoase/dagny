@@ -29,15 +29,15 @@ response.
 For collections, the URIs and their interaction with the standard HTTP methods
 follows the Rails convention:
 
-    Method  Path            Action        Behavior
-    --------------------------------------------------------------
-    GET     /users          User.index    List all users
-    GET     /users/new      User.new      Display new user form
-    POST    /users          User.create   Create new user
-    GET     /users/1        User.show     Display user 1
-    GET     /users/1/edit   User.edit     Display edit user 1 form
-    PUT     /users/1        User.update   Update user 1
-    DELETE  /users/1        User.destroy  Delete user 1
+    Method  Path             Action        Behavior
+    ---------------------------------------------------------------
+    GET     /users/          User.index    List all users
+    GET     /users/new/      User.new      Display new user form
+    POST    /users/          User.create   Create new user
+    GET     /users/1/        User.show     Display user 1
+    GET     /users/1/edit/   User.edit     Display edit user 1 form
+    PUT     /users/1/        User.update   Update user 1
+    DELETE  /users/1/        User.destroy  Delete user 1
 
 Note that not all of these actions are required; for example, you may not wish
 to provide `/users/new` and `/users/1/edit`, instead preferring to display the
@@ -50,16 +50,60 @@ method.
 For singular resources, the URI scheme is similar:
 
     Method  Path            Action            Behavior
-    -------------------------------------------------------------------
-    GET     /account        Account.show      Display the account
-    GET     /account/new    Account.new       Display new account form
-    POST    /account        Account.create    Create the new account
-    GET     /account/edit   Account.edit      Display edit account form
-    PUT     /account        Account.update    Update the account
-    DELETE  /account        Account.destroy   Delete the account
+    --------------------------------------------------------------------
+    GET     /account/        Account.show      Display the account
+    GET     /account/new/    Account.new       Display new account form
+    POST    /account/        Account.create    Create the new account
+    GET     /account/edit/   Account.edit      Display edit account form
+    PUT     /account/        Account.update    Update the account
+    DELETE  /account/        Account.destroy   Delete the account
 
 The same point applies here: you don’t need to specify all of these actions
 every time.
+
+
+#### URLconf
+
+Pointing to a collection resource from your URLconf is relatively simple:
+
+    from dagny.urls import resources  # plural!
+    from django.conf.urls.defaults import *
+    
+    urlpatterns = patterns('',
+        (r'^users/', resources('myapp.resources.User'))
+    )
+
+You can customize this; for example, to use a slug/username instead of a numeric
+ID:
+
+    urlpatterns = patterns('',
+        (r'^users/', resources('myapp.resources.User', id=r'[\w\-_]+')),
+    )
+
+You can also restrict the actions that are routed to. `resources()` will
+recognize `index`, `new`, `show` and `edit` (the other three actions are all
+based on the request method). Pass the `actions` keyword argument to specify
+which of these you would like to be available:
+
+    urlpatterns = patterns('',
+        (r'^users/', resources('myapp.resources.User', actions=('index', 'show'))),
+    )
+
+This is useful if you’re going to display the `new` and `edit` forms on the
+`index` and `show` pages, for example. It may also prevent naming clashes if
+you’re using slug identifiers in URIs.
+
+To point to a singular resource, use the `resource()` helper:
+
+    from dagny.urls import resource  # singular!
+    from django.conf.urls.defaults import *
+    
+    urlpatterns = patterns('',
+        (r'^account/', resource('myapp.resources.User'))
+    )
+
+`resource()` is similar to `resources()`, but it only generates `show`, `new`
+and `edit`, and doesn’t take an `id` parameter of any sort.
 
 
 ### Defining Resources
