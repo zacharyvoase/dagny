@@ -179,14 +179,14 @@ looks something like this:
 You can define additional renderers for a single action using the decoration
 shortcut (`@<action_name>.render.<format>`) as seen above; since content
 negotiation is based on mimetypes, a global `dict` mapping shortcodes to full
-mimetype strings is kept under `dagny.mimetypes.MIMETYPES`. You can define your
+mimetype strings is kept under `dagny.conneg.MIMETYPES`. You can define your
 own:
 
-    from dagny.mimetypes import MIMETYPES
+    from dagny.conneg import MIMETYPES
     
     MIMETYPES['rss'] = 'application/rss+xml'
     MIMETYPES['png'] = 'image/png'
     MIMETYPES.setdefault('json', 'text/javascript')
 
-There is already a relatively extensive list of types defined; see the relevant
-file for more information.
+There is already a relatively extensive list of types defined; see the
+`dagny.conneg` module for more information.
