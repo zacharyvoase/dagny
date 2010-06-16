@@ -157,17 +157,24 @@ Usage is as follows:
 Now, if you fetch `/users/zacharyvoase/`, you’ll see the result of rendering the
 `"users/show.html"` template as a HTML page. If you fetch
 `/users/zacharyvoase/?format=json`, however, you’ll get a JSON representation of
-that user. Dagny also uses `webob.acceptparse`, so passing an
-`Accept: application/json` header will result in JSON output, too.
+that user.
+
+Dagny’s ConNeg mechanism is quite sophisticated; `webob.acceptparse` is used to
+parse HTTP `Accept` headers, and these are considered alongside explicit
+`format` parameters. So, you could also have passed `Accept: application/json`
+in that last example, and it would have worked. When using `curl`, this is as
+easy as:
+
+    curl -H"Accept: application/json" 'http://mysite.com/users/zacharyvoase/'
 
 
-#### How Renderers Work
+#### When Renderers Are Called
 
-When `show()` is called by a request, the main body of the action is first run.
-If this does not return a `HttpResponse` outright, the action will perform
-content negotiation, to decide which renderer to use. In most circumstances,
-this will be `html`. The default behavior of the `html` renderer looks something
-like this:
+When an action is triggered by a request, the main body of the action is first run.
+If this does not return a `HttpResponse` outright, the renderer kicks in and
+performs content negotiation, to decide which **renderer backend** to use. In
+most circumstances, this will be `html`. The default behavior of the `html`
+renderer backend looks something like this:
 
     class User(Resource):
         
@@ -178,6 +185,30 @@ like this:
             return render_to_response("user/show.html", {
                 'self': self
             }, context_instance=RequestContext(self.request))
+
+See the section on generic backends for a more thorough explanation.
+
+
+#### Skipping Renderers
+
+Sometimes, you’ll define multiple renderer backends for an action, but in
+certain cases a single backend won’t be able to generate a response for that
+particular request. No biggie—just raise `dagny.renderer.Skip`:
+
+    from dagny.renderer import Skip
+    from django.http import HttpResponse
+    
+    class User(Resource):
+        # ... snip! ...
+        
+        @show.render.rdf_xml
+        def show(self):
+            if not hasattr(self, 'graph'):
+                raise Skip
+            return HttpResponse(content=self.graph.serialize(),
+                                content_type='application/rdf+xml')
+
+This *really* comes in handy when writing generic backends (keep reading).
 
 
 #### Additional MIME types
@@ -200,21 +231,21 @@ There is already a relatively extensive list of types defined; see the
   [dagny.conneg]: http://github.com/zacharyvoase/dagny/blob/master/src/dagny/conneg.py
 
 
-#### Generic Renderers
+#### Generic Backends
 
-Dagny also supports **generic renderers**; these are type-specific renderers
-attached to the `dagny.renderer.Renderer` class (or a subclass thereof) which
-will be available on *all* actions by default. These renderers are simple
-functions which take both the action instance and the resource instance. For
-example, the HTML renderer (which every action has as standard) looks like:
+Dagny also supports **generic renderer backends**; these are type-specific
+renderers attached to a `Renderer` instance which will be available on *all*
+actions by default. These renderers are simple functions which take both the
+action instance and the resource instance. For example, the HTML renderer (which
+every action has as standard) looks like:
 
-    from dagny.renderer import Renderer
+    from dagny.action import Action
     from dagny.utils import camel_to_underscore, resource_name
     
     from django.shortcuts import render_to_response
     from django.template import RequestContext
     
-    @Renderer.generic('html')
+    @Action.RENDERER.html
     def render_html(action, resource):
         template_path_prefix = getattr(resource, 'template_path_prefix', "")
         resource_label = camel_to_underscore(resource_name(resource))
@@ -224,7 +255,13 @@ example, the HTML renderer (which every action has as standard) looks like:
           'self': resource
         }, context_instance=RequestContext(resource.request))
 
-You can also *remove* a generic renderer from a single action like so:
+`Action.RENDERER` is a globally-shared instance of `dagny.renderer.Renderer`;
+the `render` attribute on actions is actually a `BoundRenderer`; this dichotomy
+is what allows you to define specific backends that just take `self` (the
+resource instance), and generic backends which also take the action.
+
+Each `BoundRenderer` just copies the whole set of generic backends, so you can
+operate on them as if they had been defined the normal way:
 
     class User(Resource):
     
@@ -232,4 +269,10 @@ You can also *remove* a generic renderer from a single action like so:
         def show(self, username):
             self.user = get_object_or_404(User, username=username)
         
+        # Remove the generic HTML backend
         del show.render['html']
+        
+        # Item assignment, even on a `BoundRenderer`, takes generic backend
+        # functions (i.e. functions which accept both the action *and* the
+        # resource).
+        show.render['html'] = my_generic_html_backend
