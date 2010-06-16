@@ -1,6 +1,7 @@
 *.egg-info
 *.pyc
 *.pyo
+*.sqlite3
 .DS_Store
 MANIFEST
 build
