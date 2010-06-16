@@ -75,7 +75,7 @@ class Action(object):
                 if self.form.is_valid():
                     self.form.save()
                     # Returns a response, action ends here.
-                    return redirect_to(self.user)
+                    return redirect(self.user)
                 
                 # Applies the `edit` renderer to *this* request, thus rendering
                 # the "user/edit.html" template but with this resource (and
