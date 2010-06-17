@@ -12,6 +12,20 @@ and code listings in this README may not work or may even be purely speculative
 explorations of what the final API might look like. **You have been warned.**
 
 
+## Installation
+
+    pip install dagny
+
+If you want to run tests, install Dagny with the few additional dependencies:
+
+    pip install 'dagny[test]'
+
+
+## License
+
+[What license?](http://unlicense.org/)
+
+
 ## Example Project
 
 The rest of this README is a pretty thorough introduction to Dagny’s concepts
