@@ -1,0 +1,11 @@
+wiki-name: Dagny Documentation
+
+wiki-dir: "."
+static-dir: ".static"
+
+markdown:
+  extensions:
+    - codehilite
+    - def_list
+    - headerid
+    - toc
