@@ -6,3 +6,5 @@
 MANIFEST
 build
 dist
+doc/.html
+doc/.tmp
