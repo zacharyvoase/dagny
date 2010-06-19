@@ -15,6 +15,9 @@ P.S.: the name is [a reference][dagny taggart].
   [dagny taggart]: http://en.wikipedia.org/wiki/List_of_characters_in_Atlas_Shrugged#Dagny_Taggart
 
 
+## [Documentation](http://zacharyvoase.github.com/dagny/)
+
+
 ## Motivation
 
 Rails makes building RESTful web applications incredibly easy, because
