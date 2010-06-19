@@ -1,1 +1,284 @@
-Test
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Dagny Documentation » 
+        Index
+      </title>
+      
+      
+        <!-- YUI CSS reset, fonts, base -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.0.0/build/cssreset/reset-min.css&amp;3.0.0/build/cssfonts/fonts-min.css&amp;3.0.0/build/cssbase/base-min.css" media="screen, projection" />
+        
+        <link rel="stylesheet" type="text/css" href="media/css/style.css" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="media/css/pygments.css" media="screen, projection" />
+      
+      
+      
+      
+      
+        
+      
+    
+  </head>
+  
+  <body >
+    
+  <a href="http://github.com/zacharyvoase/dagny">
+    <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+  </a>
+  
+      
+      
+        
+          
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 last">
+          
+            index
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+        
+      
+      
+      <div id="content">
+        
+        
+        
+        <!-- title: Index -->
+
+<h1 id="dagny">Dagny</h1>
+<p>Dagny is a <a href="http://djangoproject.com/">Django</a> adaptation of <a href="http://rubyonrails.org/">Ruby on Rails</a>’s Resource-Oriented
+Architecture (a.k.a. ‘RESTful Rails’).<br />
+Dagny makes it <em>really easy</em> to build <strong>resourceful</strong> web applications.</p>
+<p>At present, this project is in an experimental phase, so APIs are very liable to
+change. <strong>You have been warned.</strong></p>
+<p>P.S.: the name is <a href="http://en.wikipedia.org/wiki/List_of_characters_in_Atlas_Shrugged#Dagny_Taggart">a reference</a>.</p>
+<h2 id="tutorialtutorial"><a href="tutorial">Tutorial</a></h2>
+<h2 id="referencereference"><a href="reference">Reference</a></h2>
+<h2 id="motivation">Motivation</h2>
+<p>Rails makes building RESTful web applications incredibly easy, because
+resource-orientation is baked into the framework—it’s actually harder to make
+your app <em>un</em>RESTful.</p>
+<p>I wanted to build a similar system for Django; one that made it incredibly
+simple to model my resources and serve them up with the minimum possible code.</p>
+<p>One of the most important requirements was powerful yet simple content
+negotiation: separating application logic from the rendering of responses makes
+writing an API an effortless task.</p>
+<p>Finally, as strong as Rails’s inspiration was, it still needed to be consistent
+with the practices and idioms of the Django and Python ecosystems. Dagny doesn’t
+use any metaclasses (yet), and the code is well-documented and readable by most
+Pythonista’s standards.</p>
+<h2 id="appetizer">Appetizer</h2>
+<p>Define a resource:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny</span> <span class="kn">import</span> <span class="n">Resource</span><span class="p">,</span> <span class="n">action</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">get_object_or_404</span><span class="p">,</span> <span class="n">redirect</span>
+<span class="kn">from</span> <span class="nn">polls</span> <span class="kn">import</span> <span class="n">forms</span><span class="p">,</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">Poll</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">polls</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Poll</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">PollForm</span><span class="p">()</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">PollForm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">poll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s">&quot;Poll#show&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">new</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poll_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Poll</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">poll_id</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">PollForm</span><span class="p">(</span><span class="n">instance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="p">)</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poll_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Poll</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">poll_id</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">forms</span><span class="o">.</span><span class="n">PollForm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">POST</span><span class="p">,</span> <span class="n">instance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">is_valid</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s">&quot;Poll#show&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">edit</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">poll_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Poll</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">poll_id</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s">&quot;Poll#index&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Create the templates:</p>
+<div class="codehilite"><pre><span class="c">&lt;!-- polls/index.html --&gt;</span>
+<span class="nt">&lt;ol&gt;</span>
+  <span class="cp">{%</span> <span class="k">for</span> <span class="nv">poll</span> <span class="k">in</span> <span class="nv">self.polls</span> <span class="cp">%}</span>
+    <span class="nt">&lt;li&gt;&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">Poll</span><span class="p">#</span><span class="nv">show</span> <span class="nv">poll.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span><span class="cp">{{</span> <span class="nv">poll.name</span> <span class="cp">}}</span><span class="nt">&lt;/a&gt;&lt;/li&gt;</span>
+  <span class="cp">{%</span> <span class="k">endfor</span> <span class="cp">%}</span>
+<span class="nt">&lt;/ol&gt;</span>
+<span class="nt">&lt;p&gt;&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">Poll</span><span class="p">#</span><span class="nv">new</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>Create a poll<span class="nt">&lt;/a&gt;&lt;/p&gt;</span>
+
+<span class="c">&lt;!-- polls/new.html --&gt;</span>
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">Poll</span><span class="p">#</span><span class="nv">index</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>
+  <span class="cp">{%</span> <span class="k">csrf_token</span> <span class="cp">%}</span>
+  <span class="cp">{{</span> <span class="nv">self.form.as_p</span> <span class="cp">}}</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Create Poll&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+
+<span class="c">&lt;!-- polls/show.html --&gt;</span>
+<span class="nt">&lt;p&gt;</span>Name: <span class="cp">{{</span> <span class="nv">self.poll.name</span> <span class="cp">}}</span><span class="nt">&lt;/p&gt;</span>
+<span class="nt">&lt;p&gt;&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">Poll</span><span class="p">#</span><span class="nv">edit</span> <span class="nv">self.poll.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>Edit this poll<span class="nt">&lt;/a&gt;&lt;/p&gt;</span>
+
+<span class="c">&lt;!-- polls/edit.html --&gt;</span>
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">Poll</span><span class="p">#</span><span class="nv">show</span> <span class="nv">self.poll.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>
+  <span class="cp">{%</span> <span class="k">csrf_token</span> <span class="cp">%}</span>
+  <span class="cp">{{</span> <span class="nv">self.form.as_p</span> <span class="cp">}}</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;submit&quot;</span> <span class="na">value=</span><span class="s">&quot;Update poll&quot;</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</pre></div>
+
+
+<p>Set up the URLs:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">dagny.urls</span> <span class="kn">import</span> <span class="n">resources</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^polls/&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;polls.resources.Poll&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;Poll&#39;</span><span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Done.</p>
+<h2 id="example_project">Example Project</h2>
+<p>There’s a more comprehensive <a href="http://github.com/zacharyvoase/dagny/tree/master/example/">example project</a> which showcases a user
+management app, built in very few lines of code on top of the standard
+<code>django.contrib.auth</code> app.</p>
+<p>To get it running:</p>
+<div class="codehilite"><pre>git clone <span class="s1">&#39;git://github.com/zacharyvoase/dagny.git&#39;</span>
+<span class="nb">cd </span>dagny/
+pip install -r REQUIREMENTS  <span class="c"># Installs runtime requirements</span>
+pip install -r REQUIREMENTS.test  <span class="c"># Installs testing requirements</span>
+<span class="nb">cd </span>example/
+./manage.py syncdb  <span class="c"># Creates db/development.sqlite3</span>
+./manage.py <span class="nb">test </span>users  <span class="c"># Runs all the tests</span>
+./manage.py runserver
+</pre></div>
+
+
+<p>Then just visit <a href="http://localhost:8000/users/">http://localhost:8000/users/</a> to see it in action!</p>
+<h2 id="license">License</h2>
+<p>This is free and unencumbered software released into the public domain.</p>
+<p>Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.</p>
+<p>In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public at large and to
+the detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<p>For more information, please refer to <a href="http://unlicense.org/">http://unlicense.org/</a></p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Dagny Documentation —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+        </p>
+      </div>
+      
+    
+    
+
+    
+    <hr class="clear" />
+  </body>
+</html>

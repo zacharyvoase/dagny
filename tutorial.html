@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Dagny Documentation » 
+        Tutorial
+      </title>
+      
+      
+        <!-- YUI CSS reset, fonts, base -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.0.0/build/cssreset/reset-min.css&amp;3.0.0/build/cssfonts/fonts-min.css&amp;3.0.0/build/cssbase/base-min.css" media="screen, projection" />
+        
+        <link rel="stylesheet" type="text/css" href="media/css/style.css" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="media/css/pygments.css" media="screen, projection" />
+      
+      
+      
+      
+      
+        
+      
+    
+  </head>
+  
+  <body >
+    
+  <a href="http://github.com/zacharyvoase/dagny">
+    <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+  </a>
+  
+      
+      
+        
+          
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="./">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 last">
+          
+            tutorial
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+        
+      
+      
+      <div id="content">
+        
+        
+        
+        <!-- title: Tutorial -->
+
+<h1 id="the_dagny_tutorial">The Dagny Tutorial</h1>
+<p>In this tutorial, I’m going to walk through creating a project with
+authentication. The finished project will have signup, user pages, account
+settings management, login and logout. It should provide a good grounding in how
+to create resourceful web applications using Dagny.</p>
+<h2 id="setup">Setup</h2>
+<p>Begin by installing Dagny:</p>
+<div class="codehilite"><pre>pip install dagny  <span class="c"># or</span>
+easy_install dagny
+</pre></div>
+
+
+<p>If you aren’t using pip yet, <a href="http://python-distribute.org/pip_distribute.png">you should be</a>.</p>
+<p>Now create a fresh Django project:</p>
+<div class="codehilite"><pre>django-admin.py startproject tutorial
+<span class="nb">cd </span>tutorial/
+chmod +x manage.py  <span class="c"># So we can run ./manage.py &lt;command&gt;</span>
+mkdir templates/  <span class="c"># Project-wide templates will go here.</span>
+</pre></div>
+
+
+<p>You need to edit the <code>settings.py</code> file; I’ve provided a sample file
+<a href="http://gist.github.com/444455">here</a>, which you can drop into your project—just
+fill in the two missing values (<code>ADMINS</code> and <code>SECRET_KEY</code>).</p>
+<p>Set up the database and run a quick test:</p>
+<div class="codehilite"><pre>./manage.py syncdb
+./manage.py <span class="nb">test</span>
+</pre></div>
+
+
+<p>You should see a few lines of output, ending in the following:</p>
+<div class="codehilite"><pre>----------------------------------------------------------------------
+Ran 154 tests in 2.852s
+
+OK
+Destroying test database &#39;default&#39;...
+</pre></div>
+
+
+<p>That means everything worked.</p>
+<h2 id="the_first_resource_users">The first resource: Users</h2>
+<p>Create an app called <code>users</code>:</p>
+<div class="codehilite"><pre>./manage.py startapp users
+</pre></div>
+
+
+<p>This app will manage user and user session resources—this encompasses listing,
+displaying, creating and editing users, and logging in and out. You’ll see,
+however, that what would normally take a lot of code and configuration is
+actually very simple to do with Dagny.</p>
+<p>Create and start editing a <code>users.resources</code> module:</p>
+<div class="codehilite"><pre>vim users/resources.py
+</pre></div>
+
+
+<p>Add this basic structure:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny</span> <span class="kn">import</span> <span class="n">Resource</span><span class="p">,</span> <span class="n">action</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</td></tr></table>
+
+<p>As you can see, we’ve stubbed out 7 methods on the <code>User</code> resource: <code>index</code>,
+<code>new</code>, <code>create</code>, <code>show</code>, <code>edit</code>, <code>update</code> and <code>destroy</code>. The expected behavior
+of each of these is described in depth in the <a href="uris">URI reference</a>.</p>
+<!-- TODO: finish -->
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Dagny Documentation —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+        </p>
+      </div>
+      
+    
+    
+
+    
+    <hr class="clear" />
+  </body>
+</html>

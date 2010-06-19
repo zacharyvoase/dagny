@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Dagny Documentation » 
+        Reference
+      </title>
+      
+      
+        <!-- YUI CSS reset, fonts, base -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.0.0/build/cssreset/reset-min.css&amp;3.0.0/build/cssfonts/fonts-min.css&amp;3.0.0/build/cssbase/base-min.css" media="screen, projection" />
+        
+        <link rel="stylesheet" type="text/css" href="media/css/style.css" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="media/css/pygments.css" media="screen, projection" />
+      
+      
+      
+      
+      
+        
+      
+    
+  </head>
+  
+  <body >
+    
+  <a href="http://github.com/zacharyvoase/dagny">
+    <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+  </a>
+  
+      
+      
+        
+          
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="./">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 last">
+          
+            reference
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+        
+      
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="reference">Reference</h1>
+<h2 id="fundamental_concepts">Fundamental Concepts</h2>
+<p>Dagny’s fundamental unit is the <strong>resource</strong>. A resource is identified by, and
+can be accessed at, a single HTTP URI. A resource may be singular or plural; for
+example, <code>/users</code> is a collection of users, and <code>/users/31215</code> is a single user.
+See the <a href="uris">URI documentation</a> for a detailed schema on Dagny’s URIs and
+their behavior.</p>
+<p>In your code, resources are defined as classes with several <strong>actions</strong>. An
+action is essentially a method, routed to based on the request path and method,
+which is in charge of processing that particular request and returning a
+response. See the <a href="resources">Resources documentation</a> for a concrete
+explanation of how resources and actions are defined.</p>
+<p>Actions themselves are broken up into a main body, and a <strong>renderer</strong>. The body
+of the action does the processing—saves/retrieves a record, or perhaps performs
+some calculation. The renderer is responsible for producing a response. This
+split allows for modular content negotiation: you can define multiple
+<strong>renderer backends</strong> for an action, each of which is associated with a MIME
+type. These backends will be dispatched to based on what the client has
+requested; the default is to produce HTML, but you can easily write backends for
+JSON, XML, RDF, or even PNG if necessary. A full reference on the renderer
+system can be found in the <a href="renderer">Renderer documentation</a>.</p>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Dagny Documentation —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+        </p>
+      </div>
+      
+    
+    
+
+    
+    <hr class="clear" />
+  </body>
+</html>

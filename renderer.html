@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Dagny Documentation » 
+        The Renderer
+      </title>
+      
+      
+        <!-- YUI CSS reset, fonts, base -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.0.0/build/cssreset/reset-min.css&amp;3.0.0/build/cssfonts/fonts-min.css&amp;3.0.0/build/cssbase/base-min.css" media="screen, projection" />
+        
+        <link rel="stylesheet" type="text/css" href="media/css/style.css" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="media/css/pygments.css" media="screen, projection" />
+      
+      
+      
+      
+      
+        
+      
+    
+  </head>
+  
+  <body >
+    
+  <a href="http://github.com/zacharyvoase/dagny">
+    <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+  </a>
+  
+      
+      
+        
+          
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="./">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 last">
+          
+            renderer
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+        
+      
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="the_renderer">The Renderer</h1>
+<p>An action comes in two parts: one part does the processing, and the other (known
+as the <strong>renderer</strong>) returns a response to the client. This allows for
+transparent content negotiation, and means you never have to write a separate
+‘API’ for your site, or call <code>render_to_response()</code> at the bottom of every view
+function.</p>
+<h2 id="renderer_backends">Renderer Backends</h2>
+<p>When an action is triggered by a request, the main body of the action is first
+run. If this does not return a <code>HttpResponse</code> outright, the renderer kicks in
+and performs content negotiation, to decide which <strong>renderer backend</strong> to use.
+Each backend is associated with a mimetype, so the renderer will examine the
+client headers and resolve a series of acceptable backends, which it will call
+in decreasing order of preference until one produces a response.</p>
+<p>There are two types of renderer backend. The most common is the
+<strong>specific renderer backend</strong>, which is attached to a single action for a
+particular mimetype. Here’s a simple example of a backend for rendering a JSON
+representation of a user:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny</span> <span class="kn">import</span> <span class="n">Resource</span><span class="p">,</span> <span class="n">action</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">get_object_or_404</span>
+<span class="kn">import</span> <span class="nn">simplejson</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+
+    <span class="c"># ... snip! ...</span>
+
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
+
+    <span class="nd">@show.render.json</span>
+    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">simplejson</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()),</span>
+                            <span class="n">mimetype</span><span class="o">=</span><span class="s">&#39;application/json&#39;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>The decorator API is inspired by Python’s built-in <code>property</code>. As you can see,
+specific renderer backends are methods which accept only <code>self</code> (which will be
+the resource instance). They’re typically highly coupled with the resource and
+action they’re defined on; this one assumes the presence of <code>self.user</code>, for
+example.</p>
+<h3 id="content_negotiation">Content Negotiation</h3>
+<p>Assume that the <code>User</code> resource is mounted at <code>/users/</code>. Now, if you fetch
+<code>/users/zacharyvoase/</code>, you’ll see the <code>"users/show.html"</code> template rendered as
+a HTML page. If you fetch <code>/users/zacharyvoase/?format=json</code>, however, you’ll
+get a JSON representation of that user.</p>
+<p>Dagny’s ConNeg mechanism is quite sophisticated; <code>webob.acceptparse</code> is used to
+parse HTTP <code>Accept</code> headers, and these are considered alongside explicit
+<code>format</code> parameters. So, you could also have passed an
+<code>Accept: application/json</code> HTTP header in that last example, and it would have
+worked. If you’re using <code>curl</code>, you could try the following command:</p>
+<div class="codehilite"><pre>curl -H<span class="s2">&quot;Accept: application/json&quot;</span> <span class="s1">&#39;http://mysite.com/users/zacharyvoase/&#39;</span>
+</pre></div>
+
+
+<h2 id="skipping_renderers">Skipping Renderers</h2>
+<p>Sometimes, you will define multiple renderer backends for an action, but in a
+few cases a single backend won’t be able to generate a response for that
+particular request. You can indicate this by raising <code>dagny.renderer.Skip</code>:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny.renderer</span> <span class="kn">import</span> <span class="n">Skip</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="c"># ... snip! ...</span>
+
+    <span class="nd">@show.render.rdf_xml</span>
+    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;graph&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">Skip</span>
+        <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">serialize</span><span class="p">(),</span>
+                            <span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/rdf+xml&#39;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>The renderer will literally skip over this backend and on to the next-best
+preferred one. This feature <em>really</em> comes in handy when writing
+<a href="#generic_backends">generic backends</a>, which will only be able to determine at
+runtime whether they are suitable for a given action and request.</p>
+<h2 id="additional_mime_types">Additional MIME types</h2>
+<p>Additional renderers for a single action are defined using the decoration syntax
+(<code>@&lt;action_name&gt;.render.&lt;format&gt;</code>) as seen above, but since content negotiation
+is based on mimetypes, Dagny keeps a global <code>dict</code> (<code>dagny.conneg.MIMETYPES</code>)
+mapping these <strong>shortcodes</strong> to full mimetype strings. You can create your own
+shortcodes, and use them in resource definitions:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny.conneg</span> <span class="kn">import</span> <span class="n">MIMETYPES</span>
+
+<span class="n">MIMETYPES</span><span class="p">[</span><span class="s">&#39;rss&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;application/rss+xml&#39;</span>
+<span class="n">MIMETYPES</span><span class="p">[</span><span class="s">&#39;png&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;image/png&#39;</span>
+<span class="n">MIMETYPES</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;json&#39;</span><span class="p">,</span> <span class="s">&#39;text/javascript&#39;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>There is already a relatively extensive list of types defined; see the
+<a href="http://github.com/zacharyvoase/dagny/blob/master/src/dagny/conneg.py"><code>dagny.conneg</code> module</a> for more information.</p>
+<h2 id="generic_backends">Generic Backends</h2>
+<p>Dagny also supports <strong>generic renderer backends</strong>; these are backends attached
+to a <code>Renderer</code> instance which will be available on <em>all</em> actions by default.
+They are simple functions which take both the action instance and the resource
+instance. For example, the HTML renderer (which every action has as standard)
+looks like:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny.action</span> <span class="kn">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">dagny.utils</span> <span class="kn">import</span> <span class="n">camel_to_underscore</span><span class="p">,</span> <span class="n">resource_name</span>
+
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span>
+<span class="kn">from</span> <span class="nn">django.template</span> <span class="kn">import</span> <span class="n">RequestContext</span>
+
+<span class="nd">@Action.RENDERER.html</span>
+<span class="k">def</span> <span class="nf">render_html</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+    <span class="n">template_path_prefix</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s">&#39;template_path_prefix&#39;</span><span class="p">,</span> <span class="s">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">resource_label</span> <span class="o">=</span> <span class="n">camel_to_underscore</span><span class="p">(</span><span class="n">resource_name</span><span class="p">(</span><span class="n">resource</span><span class="p">))</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s%s</span><span class="s">/</span><span class="si">%s</span><span class="s">.html&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">template_path_prefix</span><span class="p">,</span> <span class="n">resource_label</span><span class="p">,</span> <span class="n">action</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">render_to_response</span><span class="p">(</span><span class="n">template_name</span><span class="p">,</span> <span class="p">{</span>
+      <span class="s">&#39;self&#39;</span><span class="p">:</span> <span class="n">resource</span>
+    <span class="p">},</span> <span class="n">context_instance</span><span class="o">=</span><span class="n">RequestContext</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">request</span><span class="p">))</span>
+</pre></div>
+</td></tr></table>
+
+<p>To go deeper, <code>Action.RENDERER</code> is a globally-shared instance of
+<code>dagny.renderer.Renderer</code>, whereas the <code>render</code> attribute on actions is actually
+a <code>BoundRenderer</code>. This split is what allows you to define specific backends
+that just take <code>self</code> (the resource instance), and generic backends which also
+take the action.</p>
+<p>Each <code>BoundRenderer</code> has a copy of the whole set of generic backends, so you can
+operate on them as if they had been defined on that action:</p>
+<div class="codehilite"><pre><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">)</span>
+
+    <span class="c"># Remove the generic HTML backend from the `show` action alone.</span>
+    <span class="k">del</span> <span class="n">show</span><span class="o">.</span><span class="n">render</span><span class="p">[</span><span class="s">&#39;html&#39;</span><span class="p">]</span>
+
+    <span class="c"># Item assignment, even on a `BoundRenderer`, takes generic backend</span>
+    <span class="c"># functions (i.e. functions which accept both the action *and* the</span>
+    <span class="c"># resource).</span>
+    <span class="n">show</span><span class="o">.</span><span class="n">render</span><span class="p">[</span><span class="s">&#39;html&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">my_generic_html_backend</span>
+</pre></div>
+
+
+<h3 id="skipping_in_generic_backends">Skipping in Generic Backends</h3>
+<p>As mentioned previously, <code>dagny.renderer.Skip</code> becomes very useful when writing
+generic backends. For example, here’s a backend which produces RDF/XML
+responses, but <em>only</em> if <code>self.graph</code> exists and is an instance of
+<code>rdflib.Graph</code>:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny.action</span> <span class="kn">import</span> <span class="n">Action</span>
+<span class="kn">from</span> <span class="nn">dagny.conneg</span> <span class="kn">import</span> <span class="n">MIMETYPES</span>
+<span class="kn">from</span> <span class="nn">dagny.renderer</span> <span class="kn">import</span> <span class="n">Skip</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponse</span>
+<span class="kn">import</span> <span class="nn">rdflib</span>
+
+<span class="c"># This is already defined in Dagny by default.</span>
+<span class="n">MIMETYPES</span><span class="p">[</span><span class="s">&#39;rdf_xml&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;application/rdf+xml&#39;</span>
+
+<span class="nd">@Action.RENDERER.rdf_xml</span>
+<span class="k">def</span> <span class="nf">render_rdf_xml</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+    <span class="n">graph</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="s">&#39;graph&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">rdflib</span><span class="o">.</span><span class="n">Graph</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">Skip</span>
+
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">graph</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s">&#39;xml&#39;</span><span class="p">),</span>
+                        <span class="n">content_type</span><span class="o">=</span><span class="s">&#39;application/rdf+xml&#39;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Dagny Documentation —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+        </p>
+      </div>
+      
+    
+    
+
+    
+    <hr class="clear" />
+  </body>
+</html>

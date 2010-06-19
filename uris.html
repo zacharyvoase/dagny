@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+    "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/">
+  
+  <head>
+    
+    
+      
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
+      
+      
+      <title>
+        Dagny Documentation » 
+        URIs
+      </title>
+      
+      
+        <!-- YUI CSS reset, fonts, base -->
+        <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.0.0/build/cssreset/reset-min.css&amp;3.0.0/build/cssfonts/fonts-min.css&amp;3.0.0/build/cssbase/base-min.css" media="screen, projection" />
+        
+        <link rel="stylesheet" type="text/css" href="media/css/style.css" media="screen, projection" />
+        <link rel="stylesheet" type="text/css" href="media/css/pygments.css" media="screen, projection" />
+      
+      
+      
+      
+      
+        
+      
+    
+  </head>
+  
+  <body >
+    
+  <a href="http://github.com/zacharyvoase/dagny">
+    <img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" />
+  </a>
+  
+      
+      
+        
+          
+  
+    <ol id="breadcrumbs">
+      
+        <li class="crumb-0 not-last">
+          
+            <a href="./">index</a>
+          
+        </li>
+      
+        <li class="crumb-1 last">
+          
+            uris
+          
+        </li>
+      
+    </ol> <!-- ol#breadcrumbs -->
+  
+
+        
+      
+      
+      <div id="content">
+        
+        
+        
+        <h1 id="uris">URIs</h1>
+<p>This document describes in depth Dagny’s default URI scheme for resources. In
+this aspect, Dagny follows the Rails convention, since it is well-established
+and familiar to many developers.</p>
+<p>You can also skip to the <a href="#urlconf">URLconf reference</a>.</p>
+<h2 id="actions">Actions</h2>
+<h3 id="collections">Collections</h3>
+<p>The paths and their interaction with the standard HTTP methods are as follows:</p>
+<div class="codehilite"><pre>Method  Path             Action        Behavior
+---------------------------------------------------------------
+GET     /users/          User.index    List all users
+GET     /users/new/      User.new      Display new user form
+POST    /users/          User.create   Create new user
+GET     /users/1/        User.show     Display user 1
+GET     /users/1/edit/   User.edit     Display edit user 1 form
+PUT     /users/1/        User.update   Update user 1
+DELETE  /users/1/        User.destroy  Delete user 1
+</pre></div>
+
+
+<p>Note that not all of these actions are required; for example, you may not wish
+to provide <code>/users/new</code> and <code>/users/1/edit</code>, instead preferring to display the
+relevant forms under <code>/users/</code> and <code>/users/1/</code>.</p>
+<p>To work around the fact that <code>PUT</code> and <code>DELETE</code> are not typically supported in
+browsers, you can add a <code>method</code> parameter to a <code>POST</code> form to override the
+request method.</p>
+<h3 id="singular_resources">Singular Resources</h3>
+<div class="codehilite"><pre>Method  Path            Action            Behavior
+--------------------------------------------------------------------
+GET     /account/        Account.show      Display the account
+GET     /account/new/    Account.new       Display new account form
+POST    /account/        Account.create    Create the new account
+GET     /account/edit/   Account.edit      Display edit account form
+PUT     /account/        Account.update    Update the account
+DELETE  /account/        Account.destroy   Delete the account
+</pre></div>
+
+
+<p>The same point applies here: you don’t need to specify all of these actions
+every time.</p>
+<h2 id="urlconf">URLconf</h2>
+<h3 id="collections_1">Collections</h3>
+<p>Pointing to a collection resource from your URLconf is relatively simple:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny.urls</span> <span class="kn">import</span> <span class="n">resources</span>  <span class="c"># plural!</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^users/&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;myapp.resources.User&#39;</span><span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>You can customize this; for example, to use a slug/username instead of a numeric
+ID:</p>
+<div class="codehilite"><pre><span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^users/&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;myapp.resources.User&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s">r&#39;[\w\-_]+&#39;</span><span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>You can also restrict the actions that are routed to. <code>resources()</code> will
+recognize <code>index</code>, <code>new</code>, <code>show</code> and <code>edit</code> (the other three actions share these
+paths, but are routed to based on the request method). Pass the <code>actions</code>
+keyword argument to specify which of these you would like to be available:</p>
+<div class="codehilite"><pre><span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^users/&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;myapp.resources.User&#39;</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;show&#39;</span><span class="p">))),</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>This is useful if you’re going to display the <code>new</code> and <code>edit</code> forms on the
+<code>index</code> and <code>show</code> pages, for example. It may also prevent naming clashes if
+you’re using slug identifiers in URIs.</p>
+<h3 id="singular_resources_1">Singular Resources</h3>
+<p>For this, use the <code>resource()</code> helper:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny.urls</span> <span class="kn">import</span> <span class="n">resource</span>  <span class="c"># singular!</span>
+<span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^account/&#39;</span><span class="p">,</span> <span class="n">resource</span><span class="p">(</span><span class="s">&#39;myapp.resources.User&#39;</span><span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p><code>resource()</code> is similar to <code>resources()</code>, but it only generates <code>show</code>, <code>new</code>
+and <code>edit</code>, and doesn’t take an <code>id</code> parameter of any sort.</p>
+<h3 id="reversing_urls">Reversing URLs</h3>
+<p><code>resource()</code> and <code>resources()</code> both attach names to the patterns they generate.
+This allows you to use the <code>{% url %}</code> templatetag, for example:</p>
+<div class="codehilite"><pre><span class="c">&lt;!-- A user creation (signup) form --&gt;</span>
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url myapp.resources.User#index %}&quot;</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+
+<span class="c">&lt;!-- Signup link --&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url myapp.resources.User#new %}&quot;</span><span class="nt">&gt;</span>Sign Up!<span class="nt">&lt;/a&gt;</span>
+
+<span class="c">&lt;!-- User profile link --&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url myapp.resources.User#show user.id %}&quot;</span><span class="nt">&gt;</span>View user<span class="nt">&lt;/a&gt;</span>
+
+<span class="c">&lt;!-- User editing link --&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url myapp.resources.User#edit user.id %}&quot;</span><span class="nt">&gt;</span>Edit user<span class="nt">&lt;/a&gt;</span>
+
+<span class="c">&lt;!-- User editing form --&gt;</span>
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url myapp.resources.User#show user.id %}&quot;</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+</pre></div>
+
+
+<p>You can also use these references in <code>get_absolute_url()</code> methods that have been
+wrapped with <code>@models.permalink</code>:</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="c"># ... snip! ...</span>
+
+    <span class="nd">@models.permalink</span>
+    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s">&quot;myapp.resources.User#show&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Of course, having to write out the full path to the resource is quite
+cumbersome, so you can give a <code>name</code> keyword argument to either of the URL
+helpers, and use the shortcut:</p>
+<div class="codehilite"><pre><span class="c"># In urls.py:</span>
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">r&#39;^users/&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;myapp.resources.User&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;User&#39;</span><span class="p">))</span>
+<span class="p">)</span>
+
+<span class="c"># In models.py:</span>
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="nd">@models.permalink</span>
+    <span class="k">def</span> <span class="nf">get_absolute_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s">&quot;User#show&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+<span class="c"># In resources.py:</span>
+<span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="c"># ... snip! ...</span>
+    <span class="nd">@action</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+        <span class="c"># ... validate the form and save the user ...</span>
+        <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="s">&quot;User#show&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+</pre></div>
+
+
+<p>These shortcuts are also available in the templates:</p>
+<div class="codehilite"><pre><span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url User#index %}&quot;</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url User#new %}&quot;</span><span class="nt">&gt;</span>Sign Up!<span class="nt">&lt;/a&gt;</span>
+
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url User#show user.id %}&quot;</span><span class="nt">&gt;</span>View user<span class="nt">&lt;/a&gt;</span>
+
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url User#edit user.id %}&quot;</span><span class="nt">&gt;</span>Edit user<span class="nt">&lt;/a&gt;</span>
+
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url User#show user.id %}&quot;</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+</pre></div>
+        
+        
+        
+        
+        <hr class="clear" />
+      </div> <!-- div#content -->
+      
+      
+      <div id="footer">
+        <p>
+          
+            Dagny Documentation —
+          
+          Powered by <a href="http://markdoc.org/">Markdoc</a>.
+        </p>
+      </div>
+      
+    
+    
+
+    
+    <hr class="clear" />
+  </body>
+</html>
