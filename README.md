@@ -7,15 +7,14 @@ Dagny makes it *really easy* to build **resourceful** web applications.
   [django]: http://djangoproject.com/
   [ruby on rails]: http://rubyonrails.org/
 
+You can read the full documentation [here](http://zacharyvoase.github.com/dagny/).
+
 At present, this project is in an experimental phase, so APIs are very liable to
 change. **You have been warned.**
 
 P.S.: the name is [a reference][dagny taggart].
 
   [dagny taggart]: http://en.wikipedia.org/wiki/List_of_characters_in_Atlas_Shrugged#Dagny_Taggart
-
-
-## [Documentation](http://zacharyvoase.github.com/dagny/)
 
 
 ## Motivation
