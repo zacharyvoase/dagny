@@ -132,10 +132,28 @@ Set up the URLs:
 
 Done.
 
-There’s also a more comprehensive [example app][], which demonstrates a few more
-features and ideas.
 
-  [example app]: http://github.com/zacharyvoase/dagny/tree/master/example
+## Example Project
+
+There’s a more comprehensive [example project][] which showcases a user
+management app, built in very few lines of code on top of the standard
+`django.contrib.auth` app.
+
+  [example project]: http://github.com/zacharyvoase/dagny/tree/master/example/
+
+To get it running:
+
+    :::bash
+    git clone 'git://github.com/zacharyvoase/dagny.git'
+    cd dagny/
+    pip install -r REQUIREMENTS  # Installs runtime requirements
+    pip install -r REQUIREMENTS.test  # Installs testing requirements
+    cd example/
+    ./manage.py syncdb  # Creates db/development.sqlite3
+    ./manage.py test users  # Runs all the tests
+    ./manage.py runserver
+
+Then just visit <http://localhost:8000/users/> to see it in action!
 
 
 ## License
