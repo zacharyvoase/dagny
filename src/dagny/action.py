@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from functools import wraps
+
 from dagny.renderer import Renderer
 from dagny.resource import Resource
 from dagny.utils import resource_name
@@ -91,6 +93,78 @@ class Action(object):
     
     # Global renderer to allow definition of generic renderer backends.
     RENDERER = Renderer()
+    
+    @staticmethod
+    def deco(decorator):
+        
+        """
+        Static method to wrap a typical view decorator as an action decorator.
+        
+        Usage is relatively simple, but remember that `@action.deco()` must come
+        *below* `@action`:
+        
+            class User(Resource):
+                
+                @action
+                @action.deco(auth_required)
+                def edit(self, username):
+                    ...
+        
+        This will wrap the decorator so that *it* sees a function with a
+        signature of `view(request, *args, **kwargs)`; this function is an
+        adapter which will then call the action appropriately.
+        
+            >>> def decorator(view):
+            ...     def wrapper(request, *args, **kwargs):
+            ...         print "WRAPPER (In):"
+            ...         print "  ", repr(request), args, kwargs
+            ...         
+            ...         request = "ModifiedRequest"
+            ...         args = ("another_user",)
+            ...         kwargs.update(authenticated=True)
+            ...
+            ...         print "WRAPPER (Out):"
+            ...         print "  ", repr(request), args, kwargs
+            ...         
+            ...         return view(request, *args, **kwargs)
+            ...     return wrapper
+            
+            >>> def view(self, username):
+            ...     print "VIEW:"
+            ...     print "  ", repr(self.request), self.args, self.params
+            
+            >>> resource = type('Resource', (object,), {})()
+            >>> resource.request = "Request"
+            >>> resource.args = ("some_user",)
+            >>> resource.params = {}
+            
+            >>> view(resource, "some_user")
+            VIEW:
+               'Request' ('some_user',) {}
+            
+            >>> Action.deco(decorator)(view)(resource, "some_user")
+            WRAPPER (In):
+               'Request' ('some_user',) {}
+            WRAPPER (Out):
+               'ModifiedRequest' ('another_user',) {'authenticated': True}
+            VIEW:
+               'ModifiedRequest' ('another_user',) {'authenticated': True}
+        
+        """
+        
+        @wraps(decorator)
+        def deco_wrapper(action_func):
+            @wraps(action_func)
+            def action_wrapper(self, *args):
+                @wraps(action_func)
+                def adapter(request, *adapter_args, **params):
+                    self.request = request
+                    self.args = adapter_args
+                    self.params = params
+                    return action_func(self, *self.args)
+                return decorator(adapter)(self.request, *args, **self.params)
+            return action_wrapper
+        return deco_wrapper
     
     def __init__(self, method):
         self.method = method
