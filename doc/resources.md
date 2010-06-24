@@ -76,3 +76,36 @@ most of the time you’ll want to render the same templates: `"user/index.html"`
 action doesn’t return anything (i.e. returns `None`), a template corresponding
 to the resource and action will be rendered. See the
 [renderer documentation](/renderer) for more information.
+
+
+### Decorating Resources
+
+If you want to apply a view decorator to an entire `Resource`, you can use the
+`_decorate()` method (as provided by `django-clsview`):
+
+    :::python
+    class User(Resource):
+        ...
+    User = User._decorate(auth_required)
+
+Note that this returns a *new resource*, so you need to re-assign the result to
+the old name.
+
+
+### Decorating Actions
+
+Because actions don’t have the typical function signature of a Django view (i.e.
+`view(request, *args, **kwargs)`), most view decorators won’t work on an action
+method. For this reason, Dagny provides a simple decorator-wrapper which will
+adapt a normal view decorator to work on an action method. Use it like this:
+
+    :::python
+    class User(Resource):
+        @action
+        @action.deco(auth_required)
+        def edit(self, username):
+            ...
+
+`deco()` is a staticmethod on the `Action` class, purely for convenience.
+Remember: `@action.deco()` must come *below* `@action`, otherwise you’re likely
+to get a cryptic error message at runtime.
