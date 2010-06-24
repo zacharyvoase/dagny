@@ -192,6 +192,33 @@ most of the time you’ll want to render the same templates: <code>"user/index.h
 action doesn’t return anything (i.e. returns <code>None</code>), a template corresponding
 to the resource and action will be rendered. See the
 <a href="renderer">renderer documentation</a> for more information.</p>
+<h3 id="decorating_resources">Decorating Resources</h3>
+<p>If you want to apply a view decorator to an entire <code>Resource</code>, you can use the
+<code>_decorate()</code> method (as provided by <code>django-clsview</code>):</p>
+<div class="codehilite"><pre><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="o">...</span>
+<span class="n">User</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">_decorate</span><span class="p">(</span><span class="n">auth_required</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Note that this returns a <em>new resource</em>, so you need to re-assign the result to
+the old name.</p>
+<h3 id="decorating_actions">Decorating Actions</h3>
+<p>Because actions don’t have the typical function signature of a Django view (i.e.
+<code>view(request, *args, **kwargs)</code>), most view decorators won’t work on an action
+method. For this reason, Dagny provides a simple decorator-wrapper which will
+adapt a normal view decorator to work on an action method. Use it like this:</p>
+<div class="codehilite"><pre><span class="k">class</span> <span class="nc">User</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="nd">@action</span>
+    <span class="nd">@action.deco</span><span class="p">(</span><span class="n">auth_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">):</span>
+        <span class="o">...</span>
+</pre></div>
+
+
+<p><code>deco()</code> is a staticmethod on the <code>Action</code> class, purely for convenience.
+Remember: <code>@action.deco()</code> must come <em>below</em> <code>@action</code>, otherwise you’re likely
+to get a cryptic error message at runtime.</p>
         
         
         
