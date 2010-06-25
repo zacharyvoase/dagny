@@ -95,7 +95,7 @@ Create the templates:
     <p><a href="{% url Poll#new %}">Create a poll</a></p>
     
     <!-- polls/new.html -->
-    <form method="post" action="{% url Poll#index %}">
+    <form method="post" action="{% url Poll#create %}">
       {% csrf_token %}
       {{ self.form.as_p }}
       <input type="submit" value="Create Poll" />
@@ -106,7 +106,7 @@ Create the templates:
     <p><a href="{% url Poll#edit self.poll.id %}">Edit this poll</a></p>
     
     <!-- polls/edit.html -->
-    <form method="post" action="{% url Poll#show self.poll.id %}">
+    <form method="post" action="{% url Poll#update self.poll.id %}">
       {% csrf_token %}
       {{ self.form.as_p }}
       <input type="submit" value="Update poll" />
