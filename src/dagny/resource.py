@@ -7,18 +7,31 @@ __all__ = ['Resource']
 
 
 METHOD_ACTION_MAP = {
-    'index': {
-        'GET': 'index',
-        'POST': 'create'
+    'singular': {
+        'show': {
+            'GET': 'show',
+            'POST': 'create',
+            'PUT': 'update',
+            'DELETE': 'destroy',
+        },
+        'new': {'GET': 'new'},
+        'edit': {'GET': 'edit'},
     },
-    'show': {
-        'GET': 'show',
-        'POST': 'update',
-        'PUT': 'update',
-        'DELETE': 'destroy',
-    },
-    'new': {'GET': 'new'},
-    'edit': {'GET': 'edit'},
+    
+    'plural': {
+        'index': {
+            'GET': 'index',
+            'POST': 'create'
+        },
+        'show': {
+            'GET': 'show',
+            'PUT': 'update',
+            'POST': 'update',
+            'DELETE': 'destroy',
+        },
+        'new': {'GET': 'new'},
+        'edit': {'GET': 'edit'},
+    }
 }
 
 
@@ -35,8 +48,15 @@ class Resource(View):
         method = self.request.POST.get('method', self.request.method).upper()
         # The action to use if it were a GET request.
         get_action = self.params.pop('action')
-        # The action to use for this particular request method.
-        method_action = METHOD_ACTION_MAP[get_action][method]
+        # Singular or plural?
+        mode = self.params.pop('mode')
+        
+        try:
+            # The action to use for this particular request method.
+            method_action = METHOD_ACTION_MAP[mode][get_action][method]
+        except KeyError:
+            # Assume the developer knows what he/she is doing.
+            method_action = get_action
         
         if hasattr(self, method_action):
             return getattr(self, method_action)()

@@ -29,20 +29,18 @@ def resources(resource_name, id=r'\d+', actions=None, name=None):
     The `name` parameter affects how you’ll do URL reversing; see the section
     below on reversing for in-depth information.
     
-    `resources()` generates 4 basic types of URI:
+    `resources()` generates 4 basic types of URI, and 3 aliases:
     
-        Path                Action
-        ---------------------------
-        /items/             index
+        Path                Action  Aliases
+        -------------------------------------------
+        /items/             index   create
         /items/new/         new
-        /items/<id>/        show
+        /items/<id>/        show    update, destroy
         /items/<id>/edit/   edit
     
-    In your resource definitions there are usually 7 standard actions, however,
-    since routing in Django is independent of the request method, `resources()`
-    only acknowledges these four. Note that if a request is received for an
-    undefined action, your `Resource` will return the appropriate 404 or 405
-    response, regardless of what is defined in your URLconf.
+    Note that if a request is received for an undefined action, your `Resource`
+    will return the appropriate 404 or 405 response, regardless of what is
+    defined in your URLconf.
     
     You can restrict the generated patterns by passing the `actions` keyword
     argument to `resources()`:
@@ -80,11 +78,17 @@ def resources(resource_name, id=r'\d+', actions=None, name=None):
     
     Or in templates:
     
-        <form method="post" action="{% url myapp.resources.User#show user.id %}">
+        <a href="{% url myapp.resources.User#new %}">Sign Up</a>
+        
+        <form method="post" action="{% url myapp.resources.User#create %}">
             ...
         </form>
         
-        <a href="{% url myapp.resources.User#new %}">Sign Up</a>
+        <a href="{% url myapp.resources.User#show user.id %}">View User</a>
+        
+        <form method="post" action="{% url myapp.resources.User#update user.id %}">
+            ...
+        </form>
     
     If you want to use shorter identifiers, just pass the `name` keyword
     argument to `resources()`:
@@ -99,24 +103,31 @@ def resources(resource_name, id=r'\d+', actions=None, name=None):
     
     """
     
-    action_patterns = {
-        'index': r'^$',
-        'new': r'^new/$',
-        'show': r'^(' + id + r')/$',
-        'edit': r'^(' + id + r')/edit/$'
-    }
-    
+    action_patterns = [
+        # (action_name, pattern, action_param)
+        ('index',   r'^$',                      'index'),
+        ('create',  r'^$',                      'index'),
+        ('new',     r'^new/$',                  'new'),
+        ('show',    r'^(' + id + r')/$',        'show'),
+        ('update',  r'^(' + id + r')/$',        'show'),
+        ('destroy', r'^(' + id + r')/$',        'show'),
+        ('edit',    r'^(' + id + r')/edit/$',   'edit'),
+    ]
+        
     if actions is None:
-        actions = ('index', 'new', 'show', 'edit')
+        actions = ('index', 'create', 'new', 'show', 'update', 'destroy', 'edit')
     
     if name is None:
         name = resource_name
     
     args = []
-    for action in actions:
-        args.append(url(action_patterns[action], resource_name,
-                        kwargs={'action': action},
-                        name=("%s#%s" % (name, action))))
+    
+    for action_name, pattern, action_param in action_patterns:
+        if action_name in actions:
+            args.append(url(pattern, resource_name,
+                            kwargs={'action': action_param, 'mode': 'plural'},
+                            name=("%s#%s" % (name, action_name))))
+    
     return include(patterns('', *args))
 
 
@@ -134,13 +145,13 @@ def resource(resource_name, actions=None, name=None):
             (r'^account/', resource('myapp.resources.User'))
         )
     
-    `resource()` only generates 3 types of URI:
+    `resource()` generates 3 types of URI, and 3 aliases:
     
-        Path            Action
-        ----------------------
-        /items/         show
-        /items/new/     new
-        /items/edit/    edit
+        Path              Action  Aliases
+        -------------------------------------------------
+        /account/         show    create, update, destroy
+        /account/new/     new
+        /account/edit/    edit
     
     As with `resources()`, you can pass the `actions` keyword argument to
     restrict the generated URIs:
@@ -149,7 +160,7 @@ def resource(resource_name, actions=None, name=None):
             (r'^account/', resource('myapp.resources.User', actions=('show',)))
         )
     
-    The `name` parameter works in exactly the same way as with `resources()`:
+    The `name` parameter works in the same way as with `resources()`:
     
         # urls.py:
         
@@ -163,21 +174,28 @@ def resource(resource_name, actions=None, name=None):
     
     """
     
-    action_patterns = {
-        'show': r'^$',
-        'new': r'^new/$',
-        'edit': r'^edit/$',
-    }
-    
+    action_patterns = [
+        # (action_name, pattern, action_param)
+        ('show',    r'^$',      'show'),
+        ('create',  r'^$',      'show'),
+        ('update',  r'^$',      'show'),
+        ('destroy', r'^$',      'show'),
+        ('new',     r'^new/$',  'new'),
+        ('edit',    r'^edit/$', 'edit'),
+    ]
+        
     if actions is None:
-        actions = ('show', 'new', 'edit')
+        actions = ('show', 'create', 'update', 'destroy', 'new', 'edit')
     
     if name is None:
         name = resource_name
     
     args = []
-    for args in actions:
-        args.append(url(action_patterns[action], resource_name,
-                        kwargs={'action': action},
-                        name=("%s#%s" % (name, action))))
+    
+    for action_name, pattern, action_param in action_patterns:
+        if action_name in actions:
+            args.append(url(pattern, resource_name,
+                            kwargs={'action': action_param, 'mode': 'singular'},
+                            name=("%s#%s" % (name, action_name))))
+    
     return include(patterns('', *args))
