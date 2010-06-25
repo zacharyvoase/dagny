@@ -70,14 +70,13 @@ ID:
         (r'^users/', resources('myapp.resources.User', id=r'[\w\-_]+')),
     )
 
-You can also restrict the actions that are routed to. `resources()` will
-recognize `index`, `new`, `show` and `edit` (the other three actions share these
-paths, but are routed to based on the request method). Pass the `actions`
-keyword argument to specify which of these you would like to be available:
+You can also restrict the actions that are routed to. Pass the `actions` keyword
+argument to specify which of these you would like to be available:
 
     :::python
     urlpatterns = patterns('',
-        (r'^users/', resources('myapp.resources.User', actions=('index', 'show'))),
+        (r'^users/', resources('myapp.resources.User',
+            actions=('index', 'show', 'create', 'update', 'destroy'))),
     )
 
 This is useful if you’re going to display the `new` and `edit` forms on the
@@ -108,7 +107,7 @@ This allows you to use the `{% url %}` templatetag, for example:
 
     :::django+html
     <!-- A user creation (signup) form -->
-    <form method="post" action="{% url myapp.resources.User#index %}">
+    <form method="post" action="{% url myapp.resources.User#create %}">
       ...
     </form>
     
@@ -122,7 +121,7 @@ This allows you to use the `{% url %}` templatetag, for example:
     <a href="{% url myapp.resources.User#edit user.id %}">Edit user</a>
     
     <!-- User editing form -->
-    <form method="post" action="{% url myapp.resources.User#show user.id %}">
+    <form method="post" action="{% url myapp.resources.User#update user.id %}">
       ...
     </form>
 
@@ -166,7 +165,7 @@ helpers, and use the shortcut:
 These shortcuts are also available in the templates:
 
     :::django+html
-    <form method="post" action="{% url User#index %}">
+    <form method="post" action="{% url User#create %}">
       ...
     </form>
     
@@ -176,6 +175,6 @@ These shortcuts are also available in the templates:
     
     <a href="{% url User#edit user.id %}">Edit user</a>
     
-    <form method="post" action="{% url User#show user.id %}">
+    <form method="post" action="{% url User#update user.id %}">
       ...
     </form>
