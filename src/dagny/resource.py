@@ -48,10 +48,10 @@ class Resource(View):
         method = self.request.POST.get('method', self.request.method).upper()
         # The action to use if it were a GET request.
         get_action = self.params.pop('action')
-        # Singular or plural?
-        mode = self.params.pop('mode')
         
         try:
+            # Singular or plural?
+            mode = self.params.pop('mode')
             # The action to use for this particular request method.
             method_action = METHOD_ACTION_MAP[mode][get_action][method]
         except KeyError:
