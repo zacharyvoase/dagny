@@ -2,7 +2,7 @@
 
 from django.conf.urls.defaults import include, patterns, url
 
-__all__ = ['resource']
+__all__ = ['resources', 'resource']
 
 
 def resources(resource_name, id=r'\d+', actions=None, name=None):
