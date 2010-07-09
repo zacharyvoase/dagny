@@ -45,7 +45,7 @@ class Resource(View):
     def __call__(self):
         """Dispatch to an action based on HTTP method + URL."""
         
-        method = self.request.POST.get('method', self.request.method).upper()
+        method = self.request.POST.get('_method', self.request.method).upper()
         # The action to use if it were a GET request.
         get_action = self.params.pop('action')
         
