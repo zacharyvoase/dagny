@@ -28,8 +28,14 @@ to provide `/users/new` and `/users/1/edit`, instead preferring to display the
 relevant forms under `/users/` and `/users/1/`.
 
 To work around the fact that `PUT` and `DELETE` are not typically supported in
-browsers, you can add a `method` parameter to a `POST` form to override the
-request method.
+browsers, you can add a `_method` parameter to a `POST` form to override the
+request method:
+
+    :::html+django
+    <form method="post" action="/users/1/">
+      <input type="hidden" name="_method" value="delete" />
+      ...
+    </form>
 
 
 ### Singular Resources
@@ -105,7 +111,7 @@ and `edit`, and doesn’t take an `id` parameter of any sort.
 `resource()` and `resources()` both attach names to the patterns they generate.
 This allows you to use the `{% url %}` templatetag, for example:
 
-    :::django+html
+    :::html+django
     <!-- A user creation (signup) form -->
     <form method="post" action="{% url myapp.resources.User#create %}">
       ...
@@ -164,7 +170,7 @@ helpers, and use the shortcut:
 
 These shortcuts are also available in the templates:
 
-    :::django+html
+    :::html+django
     <form method="post" action="{% url User#create %}">
       ...
     </form>
