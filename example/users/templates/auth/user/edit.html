@@ -13,7 +13,7 @@
   <form method="delete" action="{% url User#show self.user.id %}">
     {% csrf_token %}
     
-    <input type="hidden" name="method" value="delete" />
+    <input type="hidden" name="_method" value="delete" />
     
     <input type="submit" value="Delete This User" />
   </form>
