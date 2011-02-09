@@ -17,7 +17,7 @@ METHOD_ACTION_MAP = {
         'new': {'GET': 'new'},
         'edit': {'GET': 'edit'},
     },
-    
+
     'plural': {
         'index': {
             'GET': 'index',
@@ -36,40 +36,55 @@ METHOD_ACTION_MAP = {
 
 
 class Resource(View):
-    
+
     def __init__(self, request, *args, **params):
         self.request = request
         self.args = args
         self.params = params
-    
+
     def __call__(self):
         """Dispatch to an action based on HTTP method + URL."""
-        
+
         method = self.request.POST.get('_method', self.request.method).upper()
-        # The action to use if it were a GET request.
-        get_action = self.params.pop('action')
-        
+        url_action = self.params.pop('action')
+        mode = self.params.pop('mode', None)
+        return self._route(method, url_action, mode=mode)()
+
+    def _route(self, method, url_action, mode=None):
+
+        """
+        Resolve a method, URL action and (optionally) mode to a 0-ary callable.
+
+        The default behaviour is to map the URL action and the method via the
+        `METHOD_ACTION_MAP` to an action on this resource.
+        """
+
         try:
-            # Singular or plural?
-            mode = self.params.pop('mode')
-            # The action to use for this particular request method.
-            method_action = METHOD_ACTION_MAP[mode][get_action][method]
+            action_name = METHOD_ACTION_MAP[mode][url_action][method]
         except KeyError:
             # Assume the developer knows what he/she is doing.
-            method_action = get_action
-        
-        if hasattr(self, method_action):
-            return getattr(self, method_action)()
-        elif hasattr(self, get_action):
-            allowed_methods = []
-            for meth, action_name in METHOD_ACTION_MAP[get_action].items():
-                if hasattr(self, action_name):
-                    allowed_methods.append(meth)
-            return HttpResponseNotAllowed(allowed_methods)
+            action_name = url_action
+
+        if hasattr(self, action_name):
+            return getattr(self, action_name)
+        elif mode:
+            return lambda: self._not_allowed(mode, url_action)
         else:
-            raise Http404
-    
+            return self._not_found
+
+    def _not_allowed(self, mode, url_action):
+        """Return a `HttpResponseNotAllowed` for this mode and URL action."""
+
+        allowed_methods = []
+        for meth, action_name in METHOD_ACTION_MAP[mode][get_action].items():
+            if hasattr(self, action_name):
+                allowed_methods.append(meth)
+        return HttpResponseNotAllowed(allowed_methods)
+
+    def _not_found(self):
+        raise Http404
+
     def _format(self):
         """Return a mimetype shortcode, in case there's no Accept header."""
-        
+
         return self.request.GET.get('format')
