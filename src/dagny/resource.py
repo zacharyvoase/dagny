@@ -76,7 +76,7 @@ class Resource(View):
         """Return a `HttpResponseNotAllowed` for this mode and URL action."""
 
         allowed_methods = []
-        for meth, action_name in METHOD_ACTION_MAP[mode][get_action].items():
+        for meth, action_name in METHOD_ACTION_MAP[mode][url_action].items():
             if hasattr(self, action_name):
                 allowed_methods.append(meth)
         return HttpResponseNotAllowed(allowed_methods)
