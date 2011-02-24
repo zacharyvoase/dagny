@@ -7,7 +7,7 @@ If you want to define a custom mimetype shortcode, add it to the `MIMETYPES`
 dictionary in this module (without the leading '.' character). For example:
 
     from dagny.conneg import MIMETYPES
-    
+
     MIMETYPES['png'] = 'image/png'
     MIMETYPES['json'] = 'text/javascript'
 
@@ -38,32 +38,32 @@ del ext, shortcode, mimetype  # Clean up
 
 
 def match_accept(header, shortcodes):
-    
+
     """
     Match an Accept header against a list of shortcodes, in order of preference.
-    
+
     A few examples:
-    
+
         >>> header = "application/xml,application/xhtml+xml,text/html"
-        
+
         >>> match_accept(header, ['html', 'json', 'xml'])
         ['html', 'xml']
-        
+
         >>> header2 = "application/json,application/xml"
-        
+
         >>> match_accept(header2, ['html', 'json', 'xml'])
         ['json', 'xml']
-        
+
         >>> match_accept(header2, ['html', 'xml', 'json'])
         ['xml', 'json']
-    
+
     """
-    
+
     server_types = map(MIMETYPES.__getitem__, shortcodes)
     client_types = MIMEAccept("Accept", header).best_matches()
     matches = []
     for mimetype in server_types:
         if mimetype in client_types:
             matches.append(mimetype)
-    
+
     return map(shortcodes.__getitem__, map(server_types.index, matches))
