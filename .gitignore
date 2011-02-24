@@ -8,3 +8,5 @@ build
 dist
 doc/.html
 doc/.tmp
+/distribute-*.tar.gz
+/distribute-*.egg
