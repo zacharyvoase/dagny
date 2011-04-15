@@ -41,10 +41,14 @@ class Resource(View):
         self.request = request
         self.args = args
         self.params = params
+        self._called_yet = False
 
     def __call__(self):
         """Dispatch to an action based on HTTP method + URL."""
 
+        if self._called_yet:
+            return self
+        self._called_yet = True
         method = self.request.POST.get('_method', self.request.method).upper()
         url_action = self.params.pop('action')
         mode = self.params.pop('mode', None)
