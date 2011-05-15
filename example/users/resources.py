@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from dagny import Resource, action
+from dagny.renderer import Skip
 from django.contrib.auth import forms, models
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -18,6 +19,11 @@ class User(Resource):
     @index.render.json
     def index(self):
         return json_response([user_to_dict(user) for user in self.users])
+
+    # Stub to test that skipping works.
+    @index.render.xml
+    def index(self):
+        raise Skip
 
     @action
     def new(self):
