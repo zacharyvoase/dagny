@@ -7,4 +7,4 @@ import dagny.renderers
 
 __all__ = ['Resource', 'action']
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
