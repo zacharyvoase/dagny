@@ -76,38 +76,127 @@ this aspect, Dagny follows the Rails convention, since it is well-established
 and familiar to many developers.</p>
 <p>You can also skip to the <a href="#urlconf">URLconf reference</a>.</p>
 <h2 id="actions">Actions</h2>
+<p>This is the default resource URL scheme. Dagny also supports configurable
+<a href="#alternative_url_styles">URL styles</a>, but you should get familiar with the
+defaults before moving on to those.</p>
 <h3 id="collections">Collections</h3>
 <p>The paths and their interaction with the standard HTTP methods are as follows:</p>
-<div class="codehilite"><pre>Method  Path             Action        Behavior
----------------------------------------------------------------
-GET     /users/          User.index    List all users
-GET     /users/new/      User.new      Display new user form
-POST    /users/          User.create   Create new user
-GET     /users/1/        User.show     Display user 1
-GET     /users/1/edit/   User.edit     Display edit user 1 form
-PUT     /users/1/        User.update   Update user 1
-DELETE  /users/1/        User.destroy  Delete user 1
-</pre></div>
-
-
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Action</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/users/</code></td>
+<td><code>User.index</code></td>
+<td>List all users</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/users/new/</code></td>
+<td><code>User.new</code></td>
+<td>Display new user form</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/users/</code></td>
+<td><code>User.create</code></td>
+<td>Create new user</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/users/1/</code></td>
+<td><code>User.show</code></td>
+<td>Display user 1</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/users/1/edit/</code></td>
+<td><code>User.edit</code></td>
+<td>Display edit user 1 form</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/users/1/</code></td>
+<td><code>User.update</code></td>
+<td>Update user 1</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/users/1/</code></td>
+<td><code>User.destroy</code></td>
+<td>Delete user 1</td>
+</tr>
+</tbody>
+</table>
 <p>Note that not all of these actions are required; for example, you may not wish
 to provide <code>/users/new</code> and <code>/users/1/edit</code>, instead preferring to display the
 relevant forms under <code>/users/</code> and <code>/users/1/</code>.</p>
 <p>To work around the fact that <code>PUT</code> and <code>DELETE</code> are not typically supported in
-browsers, you can add a <code>method</code> parameter to a <code>POST</code> form to override the
-request method.</p>
-<h3 id="singular_resources">Singular Resources</h3>
-<div class="codehilite"><pre>Method  Path            Action            Behavior
---------------------------------------------------------------------
-GET     /account/        Account.show      Display the account
-GET     /account/new/    Account.new       Display new account form
-POST    /account/        Account.create    Create the new account
-GET     /account/edit/   Account.edit      Display edit account form
-PUT     /account/        Account.update    Update the account
-DELETE  /account/        Account.destroy   Delete the account
+browsers, you can add a <code>_method</code> parameter to a <code>POST</code> form to override the
+request method:</p>
+<div class="codehilite"><pre><span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;/users/1/&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">&quot;hidden&quot;</span> <span class="na">name=</span><span class="s">&quot;_method&quot;</span> <span class="na">value=</span><span class="s">&quot;delete&quot;</span> <span class="nt">/&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
 </pre></div>
 
 
+<h3 id="singular_resources">Singular Resources</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Action</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/account/</code></td>
+<td><code>Account.show</code></td>
+<td>Display the account</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/account/new/</code></td>
+<td><code>Account.new</code></td>
+<td>Display new account form</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/account/</code></td>
+<td><code>Account.create</code></td>
+<td>Create the new account</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/account/edit/</code></td>
+<td><code>Account.edit</code></td>
+<td>Display edit account form</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/account/</code></td>
+<td><code>Account.update</code></td>
+<td>Update the account</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/account/</code></td>
+<td><code>Account.destroy</code></td>
+<td>Delete the account</td>
+</tr>
+</tbody>
+</table>
 <p>The same point applies here: you don’t need to specify all of these actions
 every time.</p>
 <h2 id="urlconf">URLconf</h2>
@@ -135,12 +224,11 @@ ID:</p>
 </pre></div>
 
 
-<p>You can also restrict the actions that are routed to. <code>resources()</code> will
-recognize <code>index</code>, <code>new</code>, <code>show</code> and <code>edit</code> (the other three actions share these
-paths, but are routed to based on the request method). Pass the <code>actions</code>
-keyword argument to specify which of these you would like to be available:</p>
+<p>You can also restrict the actions that are routed to. Pass the <code>actions</code> keyword
+argument to specify which of these you would like to be available:</p>
 <div class="codehilite"><pre><span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
-    <span class="p">(</span><span class="s">r&#39;^users/&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;myapp.resources.User&#39;</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;show&#39;</span><span class="p">))),</span>
+    <span class="p">(</span><span class="s">r&#39;^users/&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;myapp.resources.User&#39;</span><span class="p">,</span>
+        <span class="n">actions</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;show&#39;</span><span class="p">,</span> <span class="s">&#39;create&#39;</span><span class="p">,</span> <span class="s">&#39;update&#39;</span><span class="p">,</span> <span class="s">&#39;destroy&#39;</span><span class="p">))),</span>
 <span class="p">)</span>
 </pre></div>
 
@@ -170,21 +258,21 @@ and <code>edit</code>, and doesn’t take an <code>id</code> parameter of any so
 <p><code>resource()</code> and <code>resources()</code> both attach names to the patterns they generate.
 This allows you to use the <code>{% url %}</code> templatetag, for example:</p>
 <div class="codehilite"><pre><span class="c">&lt;!-- A user creation (signup) form --&gt;</span>
-<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url myapp.resources.User#index %}&quot;</span><span class="nt">&gt;</span>
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">myapp.resources.User</span><span class="p">#</span><span class="nv">create</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>
   ...
 <span class="nt">&lt;/form&gt;</span>
 
 <span class="c">&lt;!-- Signup link --&gt;</span>
-<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url myapp.resources.User#new %}&quot;</span><span class="nt">&gt;</span>Sign Up!<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">myapp.resources.User</span><span class="p">#</span><span class="nv">new</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>Sign Up!<span class="nt">&lt;/a&gt;</span>
 
 <span class="c">&lt;!-- User profile link --&gt;</span>
-<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url myapp.resources.User#show user.id %}&quot;</span><span class="nt">&gt;</span>View user<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">myapp.resources.User</span><span class="p">#</span><span class="nv">show</span> <span class="nv">user.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>View user<span class="nt">&lt;/a&gt;</span>
 
 <span class="c">&lt;!-- User editing link --&gt;</span>
-<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url myapp.resources.User#edit user.id %}&quot;</span><span class="nt">&gt;</span>Edit user<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">myapp.resources.User</span><span class="p">#</span><span class="nv">edit</span> <span class="nv">user.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>Edit user<span class="nt">&lt;/a&gt;</span>
 
 <span class="c">&lt;!-- User editing form --&gt;</span>
-<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url myapp.resources.User#show user.id %}&quot;</span><span class="nt">&gt;</span>
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">myapp.resources.User</span><span class="p">#</span><span class="nv">update</span> <span class="nv">user.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>
   ...
 <span class="nt">&lt;/form&gt;</span>
 </pre></div>
@@ -228,20 +316,131 @@ helpers, and use the shortcut:</p>
 
 
 <p>These shortcuts are also available in the templates:</p>
-<div class="codehilite"><pre><span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url User#index %}&quot;</span><span class="nt">&gt;</span>
+<div class="codehilite"><pre><span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">User</span><span class="p">#</span><span class="nv">create</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>
   ...
 <span class="nt">&lt;/form&gt;</span>
 
-<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url User#new %}&quot;</span><span class="nt">&gt;</span>Sign Up!<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">User</span><span class="p">#</span><span class="nv">new</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>Sign Up!<span class="nt">&lt;/a&gt;</span>
 
-<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url User#show user.id %}&quot;</span><span class="nt">&gt;</span>View user<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">User</span><span class="p">#</span><span class="nv">show</span> <span class="nv">user.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>View user<span class="nt">&lt;/a&gt;</span>
 
-<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;{% url User#edit user.id %}&quot;</span><span class="nt">&gt;</span>Edit user<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">User</span><span class="p">#</span><span class="nv">edit</span> <span class="nv">user.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>Edit user<span class="nt">&lt;/a&gt;</span>
 
-<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;{% url User#show user.id %}&quot;</span><span class="nt">&gt;</span>
+<span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">&quot;post&quot;</span> <span class="na">action=</span><span class="s">&quot;</span><span class="cp">{%</span> <span class="k">url</span> <span class="nv">User</span><span class="p">#</span><span class="nv">update</span> <span class="nv">user.id</span> <span class="cp">%}</span><span class="s">&quot;</span><span class="nt">&gt;</span>
   ...
 <span class="nt">&lt;/form&gt;</span>
 </pre></div>
+
+
+<h2 id="alternative_url_styles">Alternative URL Styles</h2>
+<p>Dagny supports configurable <em>URL styles</em>, of which the default is only a single
+instance. Following are the other two which Dagny comes packaged with.</p>
+<p>To use an alternative style, create a <code>dagny.urls.router.URLRouter</code> with the
+style and use the <code>resources()</code> and <code>resource()</code> methods defined on that as
+your URLconf helpers.</p>
+<div class="codehilite"><pre><span class="kn">from</span> <span class="nn">dagny.urls.router</span> <span class="kn">import</span> <span class="n">URLRouter</span>
+<span class="kn">from</span> <span class="nn">myapp</span> <span class="kn">import</span> <span class="n">MyURLStyle</span>
+
+<span class="n">style</span> <span class="o">=</span> <span class="n">MyURLStyle</span><span class="p">()</span>
+<span class="n">router</span> <span class="o">=</span> <span class="n">URLRouter</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+
+<span class="c"># Use these instead when defining your URLs.</span>
+<span class="n">resources</span><span class="p">,</span> <span class="n">resource</span> <span class="o">=</span> <span class="n">router</span><span class="o">.</span><span class="n">resources</span><span class="p">,</span> <span class="n">router</span><span class="o">.</span><span class="n">resource</span>
+</pre></div>
+
+
+<p>The built-in alternative styles already have stub modules with the two helpers
+defined.</p>
+<h3 id="atompub_urls">AtomPub URLs</h3>
+<p>This style matches the URL conventions used in the
+<a href="http://tools.ietf.org/html/rfc5023">Atom Publishing Protocol</a>.</p>
+<p>Usage: <code>from dagny.urls.atompub import *</code></p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Action(s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/accounts/</code></td>
+<td><code>Account.index</code>, <code>Account.create</code></td>
+</tr>
+<tr>
+<td><code>/accounts/new</code></td>
+<td><code>Account.new</code></td>
+</tr>
+<tr>
+<td><code>/accounts/1</code></td>
+<td><code>Account.show</code>, <code>Account.update</code>, <code>Account.destroy</code></td>
+</tr>
+<tr>
+<td><code>/accounts/1/edit</code></td>
+<td><code>Account.edit</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="rails_urls">Rails URLs</h3>
+<p>These URLs mimic those of Rails, including the optional format extensions.</p>
+<p>Usage: <code>from dagny.urls.rails import *</code></p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Action(s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/accounts</code></td>
+<td><code>Account.index</code>, <code>Account.create</code></td>
+</tr>
+<tr>
+<td><code>/accounts.json</code></td>
+<td>〃 (with kwargs <code>{'format': 'json'}</code>)</td>
+</tr>
+<tr>
+<td><code>/accounts/</code></td>
+<td>〃</td>
+</tr>
+<tr>
+<td><code>/accounts/new</code></td>
+<td><code>Account.new</code></td>
+</tr>
+<tr>
+<td><code>/accounts/1</code></td>
+<td><code>Account.show</code>, <code>Account.update</code>, <code>Account.destroy</code></td>
+</tr>
+<tr>
+<td><code>/accounts/1/</code></td>
+<td>〃</td>
+</tr>
+<tr>
+<td><code>/accounts/1.json</code></td>
+<td>〃 (with kwargs <code>{'format': 'json'}</code>)</td>
+</tr>
+<tr>
+<td><code>/accounts/1/edit</code></td>
+<td><code>Account.edit</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note</strong>: due to limitations of the URLconf system—to wit, the inability to mix
+keyword and positional arguments in the same URL—your IDs/slugs have to come
+in as named parameters. By default, the parameter will be called <code>id</code>, but you
+can select a different one using the <code>id</code> keyword argument to the URL helpers:</p>
+<div class="codehilite"><pre><span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="c"># To get the slug, use `self.params[&#39;slug&#39;]` on the `Post` resource.</span>
+    <span class="c"># Also note: there is no terminating slash on the top-level regex.</span>
+    <span class="p">(</span><span class="s">r&#39;posts&#39;</span><span class="p">,</span> <span class="n">resources</span><span class="p">(</span><span class="s">&#39;myapp.resources.Post&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;Post&#39;</span><span class="p">,</span>
+                         <span class="nb">id</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;slug&#39;</span><span class="p">,</span> <span class="s">r&#39;[\w\-]+&#39;</span><span class="p">))),</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>Another caveat: do not terminate your top-level regex with a slash, or the
+format extension on the resource index (e.g. <code>/posts.json</code>) won't work.</p>
         
         
         
