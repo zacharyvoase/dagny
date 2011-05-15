@@ -8,6 +8,6 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^users/', resources('users.resources.User', name='User')),
-    
+
     (r'^admin/', include(admin.site.urls)),
 )

@@ -8,45 +8,45 @@ import simplejson
 
 
 class User(Resource):
-    
+
     template_path_prefix = 'auth/'
-    
+
     @action
     def index(self):
         self.users = models.User.objects.all()
-    
+
     @index.render.json
     def index(self):
         return json_response([user_to_dict(user) for user in self.users])
-    
+
     @action
     def new(self):
         self.form = forms.UserCreationForm()
-    
+
     @action
     def create(self):
         self.form = forms.UserCreationForm(self.request.POST)
         if self.form.is_valid():
             self.user = self.form.save()
             return redirect('User#show', str(self.user.id))
-        
+
         response = self.new.render()
         response.status_code = 403
         return response
-    
+
     @action
     def show(self, user_id):
         self.user = get_object_or_404(models.User, id=int(user_id))
-    
+
     @show.render.json
     def show(self):
         return json_response(user_to_dict(self.user))
-    
+
     @action
     def edit(self, user_id):
         self.user = get_object_or_404(models.User, id=int(user_id))
         self.form = forms.UserChangeForm(instance=self.user)
-    
+
     @action
     def update(self, user_id):
         self.user = get_object_or_404(models.User, id=int(user_id))
@@ -54,11 +54,11 @@ class User(Resource):
         if self.form.is_valid():
             self.form.save()
             return redirect('User#show', str(self.user.id))
-        
+
         response = self.edit.render()
         response.status_code = 403
         return response
-    
+
     @action
     def destroy(self, user_id):
         self.user = get_object_or_404(models.User, id=int(user_id))
