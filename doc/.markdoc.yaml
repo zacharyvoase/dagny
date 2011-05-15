@@ -9,3 +9,4 @@ markdown:
     - def_list
     - headerid
     - toc
+    - tables
