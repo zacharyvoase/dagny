@@ -91,4 +91,6 @@ class Resource(View):
     def _format(self):
         """Return a mimetype shortcode, in case there's no Accept header."""
 
+        if self.params.get('format'):
+            return self.params['format'].lstrip('.')
         return self.request.GET.get('format')
