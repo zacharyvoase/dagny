@@ -144,6 +144,16 @@ class Renderer(object):
             except Skip:
                 continue
 
+        # One last-ditch attempt to render HTML, pursuant to the note about
+        # HTTP/1.1 here:
+        #   <http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.7>
+        # It's better to give an 'unacceptable' response than none at all.
+        if 'html' not in matches and 'html' in self:
+            try:
+                return self['html'](action, resource)
+            except Skip:
+                pass
+
         return not_acceptable(action, resource)
 
     def _match(self, action, resource):
