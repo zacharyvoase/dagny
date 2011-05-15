@@ -3,6 +3,7 @@
 *.pyo
 *.sqlite3
 .DS_Store
+.virtualenv
 MANIFEST
 build
 dist
