@@ -77,6 +77,9 @@ class RailsRoutingTest(DefaultRoutingTest):
         self.assert_resolves('/users-rails/1',
                              resources.UserRails,
                              id='1', action='show')
+        self.assert_resolves('/users-rails/1/',
+                             resources.UserRails,
+                             id='1', action='show')
 
         # Fails for invalid IDs.
         self.assertRaises(NoReverseMatch, reverse, 'UserRails#show',
@@ -96,9 +99,13 @@ class RailsRoutingTest(DefaultRoutingTest):
     def test_new(self):
         self.assertEqual(reverse('UserRails#new'), '/users-rails/new')
         self.assert_resolves('/users-rails/new', resources.UserRails, action='new')
+        self.assert_resolves('/users-rails/new/', resources.UserRails, action='new')
         self.assertRaises(Resolver404, resolve, '/users-rails/new/foobar')
         self.assertRaises(Resolver404, resolve, '/users-rails/new.foobar')
 
     def test_edit(self):
         self.assertEqual(reverse('UserRails#edit', kwargs={'id': 1}), '/users-rails/1/edit')
         self.assert_resolves('/users-rails/1/edit', resources.UserRails, id='1', action='edit')
+        self.assert_resolves('/users-rails/1/edit/', resources.UserRails, id='1', action='edit')
+        self.assertRaises(Resolver404, resolve, '/users-rails/1/edit/foobar')
+        self.assertRaises(Resolver404, resolve, '/users-rails/1/edit.foobar')
