@@ -66,6 +66,14 @@ class User(Resource):
         return redirect('User#index')
 
 
+# Stub resources for the routing tests.
+class UserAtomPub(User):
+    pass
+
+class UserRails(User):
+    pass
+
+
 def json_response(data):
     return HttpResponse(content=simplejson.dumps(data),
                         content_type='application/json')
