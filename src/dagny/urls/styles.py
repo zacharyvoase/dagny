@@ -2,7 +2,7 @@ class URLStyle(object):
 
     """
     Generic class for defining resource URL styles.
-    
+
     `URLStyle` can be used to create callables which will work for the
     interface defined in `dagny.urls.router.URLRouter`. Subclass and override
     the `index()`, `new()`, `show()`, `edit()` and `singular_edit()` methods
@@ -23,7 +23,7 @@ class URLStyle(object):
 
         """
         Resolve `(name, regex)` => `'?P<name>regex'`.
-        
+
         Since the style methods should add parentheses around the ID regex
         fragment, the output for named ID parameters is not surrounded by
         parentheses itself.
@@ -126,7 +126,7 @@ class RailsURLStyle(URLStyle):
     This URL style is quite advanced; it will also capture format extensions
     and pass them through as a kwarg. As with `AtomPubURLStyle`, trailing
     slashes are not mandatory on leaf nodes.
-    
+
         URL           | action | args | kwargs
         --------------+--------+------+------------------------------
         /posts        | index  | ()   | {}
@@ -171,13 +171,13 @@ class RailsURLStyle(URLStyle):
         return r'^%s?/?$' % (self.FORMAT_EXTENSION_RE,)
 
     def new(self):
-        return r'^/new$'
+        return r'^/new/?$'
 
     def show(self, id_regex):
-        return r'^/(%s)%s?$' % (id_regex, self.FORMAT_EXTENSION_RE)
+        return r'^/(%s)%s?/?$' % (id_regex, self.FORMAT_EXTENSION_RE)
 
     def edit(self, id_regex):
-        return r'^/(%s)/edit$' % (id_regex,)
+        return r'^/(%s)/edit/?$' % (id_regex,)
 
     def singular_edit(self):
-        return r'^/edit$'
+        return r'^/edit/?$'
