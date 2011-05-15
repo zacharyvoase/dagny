@@ -63,7 +63,7 @@ Pointing to a collection resource from your URLconf is relatively simple:
     #!python
     from dagny.urls import resources  # plural!
     from django.conf.urls.defaults import *
-    
+
     urlpatterns = patterns('',
         (r'^users/', resources('myapp.resources.User'))
     )
@@ -97,7 +97,7 @@ For this, use the `resource()` helper:
     #!python
     from dagny.urls import resource  # singular!
     from django.conf.urls.defaults import *
-    
+
     urlpatterns = patterns('',
         (r'^account/', resource('myapp.resources.User'))
     )
@@ -116,16 +116,16 @@ This allows you to use the `{% url %}` templatetag, for example:
     <form method="post" action="{% url myapp.resources.User#create %}">
       ...
     </form>
-    
+
     <!-- Signup link -->
     <a href="{% url myapp.resources.User#new %}">Sign Up!</a>
-    
+
     <!-- User profile link -->
     <a href="{% url myapp.resources.User#show user.id %}">View user</a>
-    
+
     <!-- User editing link -->
     <a href="{% url myapp.resources.User#edit user.id %}">Edit user</a>
-    
+
     <!-- User editing form -->
     <form method="post" action="{% url myapp.resources.User#update user.id %}">
       ...
@@ -136,10 +136,10 @@ wrapped with `@models.permalink`:
 
     :::python
     from django.db import models
-    
+
     class User(models.Model):
         # ... snip! ...
-        
+
         @models.permalink
         def get_absolute_url(self):
             return ("myapp.resources.User#show", self.id)
@@ -153,13 +153,13 @@ helpers, and use the shortcut:
     urlpatterns = patterns('',
         (r'^users/', resources('myapp.resources.User', name='User'))
     )
-    
+
     # In models.py:
     class User(models.Model):
         @models.permalink
         def get_absolute_url(self):
             return ("User#show", self.id)
-    
+
     # In resources.py:
     class User(Resource):
         # ... snip! ...
@@ -174,13 +174,13 @@ These shortcuts are also available in the templates:
     <form method="post" action="{% url User#create %}">
       ...
     </form>
-    
+
     <a href="{% url User#new %}">Sign Up!</a>
-    
+
     <a href="{% url User#show user.id %}">View user</a>
-    
+
     <a href="{% url User#edit user.id %}">Edit user</a>
-    
+
     <form method="post" action="{% url User#update user.id %}">
       ...
     </form>

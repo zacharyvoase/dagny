@@ -71,32 +71,32 @@ Add this basic structure:
 
     #!python
     from dagny import Resource, action
-    
+
     class User(Resource):
         @action
         def index(self):
             pass
-        
+
         @action
         def new(self):
             pass
-        
+
         @action
         def create(self):
             pass
-        
+
         @action
         def show(self, user_id):
             pass
-        
+
         @action
         def edit(self, user_id):
             pass
-        
+
         @action
         def update(self, user_id):
             pass
-        
+
         @action
         def destroy(self, user_id):
             pass

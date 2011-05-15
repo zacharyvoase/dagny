@@ -50,31 +50,31 @@ Define a resource:
     from dagny import Resource, action
     from django.shortcuts import get_object_or_404, redirect
     from polls import forms, models
-    
+
     class Poll(Resource):
-        
+
         @action
         def index(self):
             self.polls = models.Poll.objects.all()
-        
+
         @action
         def new(self):
             self.form = forms.PollForm()
-        
+
         @action
         def create(self):
             self.form = forms.PollForm(self.request.POST)
             if self.form.is_valid():
                 self.poll = self.form.save()
                 return redirect("Poll#show", self.poll.id)
-            
+
             return self.new.render()
-        
+
         @action
         def edit(self, poll_id):
             self.poll = get_object_or_404(models.Poll, id=int(poll_id))
             self.form = forms.PollForm(instance=self.poll)
-        
+
         @action
         def update(self, poll_id):
             self.poll = get_object_or_404(models.Poll, id=int(poll_id))
@@ -82,9 +82,9 @@ Define a resource:
             if self.form.is_valid():
                 self.form.save()
                 return redirect("Poll#show", self.poll.id)
-            
+
             return self.edit.render()
-        
+
         @action
         def destroy(self, poll_id):
             self.poll = get_object_or_404(models.Poll, id=int(poll_id))
@@ -101,18 +101,18 @@ Create the templates:
       {% endfor %}
     </ol>
     <p><a href="{% url Poll#new %}">Create a poll</a></p>
-    
+
     <!-- polls/new.html -->
     <form method="post" action="{% url Poll#index %}">
       {% csrf_token %}
       {{ self.form.as_p }}
       <input type="submit" value="Create Poll" />
     </form>
-    
+
     <!-- polls/show.html -->
     <p>Name: {{ self.poll.name }}</p>
     <p><a href="{% url Poll#edit self.poll.id %}">Edit this poll</a></p>
-    
+
     <!-- polls/edit.html -->
     <form method="post" action="{% url Poll#show self.poll.id %}">
       {% csrf_token %}
@@ -125,7 +125,7 @@ Set up the URLs:
     #!python
     from django.conf.urls.defaults import *
     from dagny.urls import resources
-    
+
     urlpatterns = patterns('',
         (r'^polls/', resources('polls.resources.Poll', name='Poll')),
     )

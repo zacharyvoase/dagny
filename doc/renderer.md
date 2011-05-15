@@ -26,15 +26,15 @@ representation of a user:
     from django.http import HttpResponse
     from django.shortcuts import get_object_or_404
     import simplejson
-    
+
     class User(Resource):
-        
+
         # ... snip! ...
-        
+
         @action
         def show(self, username):
             self.user = get_object_or_404(User, username=username)
-        
+
         @show.render.json
         def show(self):
             return HttpResponse(content=simplejson.dumps(self.user.to_dict()),
@@ -72,10 +72,10 @@ particular request. You can indicate this by raising `dagny.renderer.Skip`:
     #!python
     from dagny.renderer import Skip
     from django.http import HttpResponse
-    
+
     class User(Resource):
         # ... snip! ...
-        
+
         @show.render.rdf_xml
         def show(self):
             if not hasattr(self, 'graph'):
@@ -99,7 +99,7 @@ shortcodes, and use them in resource definitions:
 
     #!python
     from dagny.conneg import MIMETYPES
-    
+
     MIMETYPES['rss'] = 'application/rss+xml'
     MIMETYPES['png'] = 'image/png'
     MIMETYPES.setdefault('json', 'text/javascript')
@@ -121,16 +121,16 @@ looks like:
     #!python
     from dagny.action import Action
     from dagny.utils import camel_to_underscore, resource_name
-    
+
     from django.shortcuts import render_to_response
     from django.template import RequestContext
-    
+
     @Action.RENDERER.html
     def render_html(action, resource):
         template_path_prefix = getattr(resource, 'template_path_prefix', "")
         resource_label = camel_to_underscore(resource_name(resource))
         template_name = "%s%s/%s.html" % (template_path_prefix, resource_label, action.name)
-        
+
         return render_to_response(template_name, {
           'self': resource
         }, context_instance=RequestContext(resource.request))
@@ -149,10 +149,10 @@ operate on them as if they had been defined on that action:
         @action
         def show(self, username):
             self.user = get_object_or_404(User, username=username)
-        
+
         # Remove the generic HTML backend from the `show` action alone.
         del show.render['html']
-        
+
         # Item assignment, even on a `BoundRenderer`, takes generic backend
         # functions (i.e. functions which accept both the action *and* the
         # resource).
@@ -172,15 +172,15 @@ responses, but *only* if `self.graph` exists and is an instance of
     from dagny.renderer import Skip
     from django.http import HttpResponse
     import rdflib
-    
+
     # This is already defined in Dagny by default.
     MIMETYPES['rdf_xml'] = 'application/rdf+xml'
-    
+
     @Action.RENDERER.rdf_xml
     def render_rdf_xml(action, resource):
         graph = getattr(resource, 'graph', None)
         if not isinstance(graph, rdflib.Graph):
             raise Skip
-        
+
         return HttpResponse(content=graph.serialize(format='xml'),
                             content_type='application/rdf+xml')
