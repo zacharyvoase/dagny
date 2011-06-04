@@ -5,19 +5,32 @@ class URLStyle(object):
 
     `URLStyle` can be used to create callables which will work for the
     interface defined in `dagny.urls.router.URLRouter`. Subclass and override
-    the `index()`, `new()`, `show()`, `edit()` and `singular_edit()` methods
-    to customize your URLs. You can use one of the several defined styles in
-    this module as a template.
+    the `collection()`, `new()`, `member()`, `edit()` and `singular_edit()`
+    methods to customize your URLs. You can use one of the several defined
+    styles in this module as a template.
     """
 
-    def __call__(self, action_param, mode, id_param):
+    METHODS = {
+        'collection': {
+            'GET': 'index',
+            'POST': 'create'
+        },
+        'member': {
+            'GET': 'show',
+            'POST': 'update',
+            'PUT': 'update',
+            'DELETE': 'destroy'
+        },
+        'new': {'GET': 'new'},
+        'edit': {'GET': 'edit'}
+    }
+
+    def __call__(self, url, id_param):
         id_regex = self._get_id_regex(id_param)
 
-        if action_param == 'edit' and mode == 'singular':
-            return self.singular_edit()
-        elif action_param in ('show', 'edit'):
-            return getattr(self, action_param)(id_regex)
-        return getattr(self, action_param)()
+        if url in ('member', 'edit'):
+            return getattr(self, url)(id_regex), self.METHODS[url]
+        return getattr(self, url)(), self.METHODS[url]
 
     def _get_id_regex(self, id_param):
 
@@ -41,13 +54,13 @@ class URLStyle(object):
 
     # Publicly-overrideable methods for customizing style behaviour.
 
-    def index(self):
+    def collection(self):
         raise NotImplementedError
 
     def new(self):
         raise NotImplementedError
 
-    def show(self, id_regex):
+    def member(self, id_regex):
         raise NotImplementedError
 
     def edit(self, id_regex):
@@ -70,13 +83,13 @@ class DjangoURLStyle(URLStyle):
        /posts/1/edit/ | edit   | ('1',) | {}
     """
 
-    def index(self):
+    def collection(self):
         return r'^$'
 
     def new(self):
         return r'^new/$'
 
-    def show(self, id_regex):
+    def member(self, id_regex):
         return r'^(%s)/$' % (id_regex,)
 
     def edit(self, id_regex):
@@ -102,13 +115,13 @@ class AtomPubURLStyle(URLStyle):
         /posts/1/edit | edit   | ('1',) | {}
     """
 
-    def index(self):
+    def collection(self):
         return r'^$'
 
     def new(self):
         return r'^new$'
 
-    def show(self, id_regex):
+    def member(self, id_regex):
         return r'^(%s)$' % (id_regex,)
 
     def edit(self, id_regex):
@@ -167,13 +180,13 @@ class RailsURLStyle(URLStyle):
             return super(RailsURLStyle, self)._get_id_regex(('id', id_param))
         return super(RailsURLStyle, self)._get_id_regex(id_param)
 
-    def index(self):
+    def collection(self):
         return r'^%s?/?$' % (self.FORMAT_EXTENSION_RE,)
 
     def new(self):
         return r'^/new/?$'
 
-    def show(self, id_regex):
+    def member(self, id_regex):
         return r'^/(%s)%s?/?$' % (id_regex, self.FORMAT_EXTENSION_RE)
 
     def edit(self, id_regex):

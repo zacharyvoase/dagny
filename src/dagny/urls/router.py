@@ -1,11 +1,11 @@
-from django.conf.urls.defaults import include, patterns, url
+from django.conf.urls import defaults
 
 
 class URLRouter(object):
 
     """
     Responsible for generating include()-able URLconfs for resources.
-    
+
     Accepts only one argument on instantiation, `style`. This should be a
     callable which accepts an action parameter, a routing mode and an ID regex,
     and returns a regular expression with a route for that action. You should
@@ -15,8 +15,7 @@ class URLRouter(object):
     def __init__(self, style):
         self.style = style
 
-    def _make_patterns(self, resource_name, id, name,
-                      actions, mode, action_patterns):
+    def _make_patterns(self, resource_name, id, name, actions, urls):
 
         """
         Construct an `include()` with all the URLs for a resource.
@@ -32,54 +31,42 @@ class URLRouter(object):
             URL patterns (e.g. if name is 'User', URLs will be 'User#index',
             'User#show' etc.). If `None`, defaults to `resource_name`.
         :param actions:
-            The actions to generate routes for. If `None`, a route will be
-            generated for every pair defined in `action_patterns`.
-        :param mode:
-            The value of the 'mode' kwarg to set in the URLs. This will also be
-            passed into the URL style as the second parameter.
-        :param action_patterns:
-            A list of pairs containing the action name and the value of the
-            'action' URL kwarg it should map to.
+            The actions to generate (named) routes for. If `None`, a route and
+            a name will be generated for every one defined by the chosen URL
+            style.
+        :param urls:
+            A list of the URLs to define patterns for. Must be made up only of
+            'member', 'collection', 'new', 'edit' and 'singular_edit'.
         """
 
-        if actions is None:
-            actions = set(action[0] for action in action_patterns)
-        else:
+        if actions is not None:
             actions = set(actions)
-
         if name is None:
             name = resource_name
 
-        urls = []
-        for action_name, action_param in action_patterns:
-            if action_name in actions:
-                pattern = self.style(action_param, mode, id)
-                urls.append(url(pattern, resource_name,
-                                kwargs={'action': action_param, 'mode': mode},
-                                name=("%s#%s" % (name, action_name))))
-        return include(patterns('', *urls))
+        urlpatterns = []
+        for url in urls:
+            # URLStyle.__call__(url_name, id_pattern)
+            #     => (url_pattern, {method: action, ...})
+            pattern, methods = self.style(url, id)
+            # Filter methods dict to only contain the selected actions.
+            methods = dict(
+                (method, action) for method, action in methods.iteritems()
+                if (actions is None) or (action in actions))
+            # Add named url patterns, one per action. Note that we will have
+            # duplicate URLs in some cases, but this is so that
+            # `{% url User#show %}` can be distinguished from
+            # `{% url User#update %}` when it makes sense.
+            for action in methods.itervalues():
+                urlpatterns.append(defaults.url(pattern, resource_name,
+                                                kwargs={'methods': methods},
+                                                name=("%s#%s" % (name, action))))
+        return defaults.include(defaults.patterns('', *urlpatterns))
 
     def resources(self, resource_name, id=r'\d+', actions=None, name=None):
-        return self._make_patterns(resource_name, id, name, actions, 'plural',
-                                  [
-                                      # (action_name, action_param)
-                                      ('index',    'index'),
-                                      ('create',   'index'),
-                                      ('new',      'new'),
-                                      ('show',     'show'),
-                                      ('update',   'show'),
-                                      ('destroy',  'show'),
-                                      ('edit',     'edit'),
-                                  ])
+        return self._make_patterns(resource_name, id, name, actions,
+                                   ['collection', 'new', 'member', 'edit'])
 
     def resource(self, resource_name, actions=None, name=None):
-        return self._make_patterns(resource_name, '', name, actions, 'singular',
-                                  [
-                                      # (action_name, action_param)
-                                      ('show',     'show'),
-                                      ('create',   'show'),
-                                      ('update',   'show'),
-                                      ('destroy',  'show'),
-                                      ('new',      'new'),
-                                      ('edit',     'edit'),
-                                  ])
+        return self._make_patterns(resource_name, '', name, actions,
+                                   ['member', 'new', 'singular_edit'])
