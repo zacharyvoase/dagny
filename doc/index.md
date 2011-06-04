@@ -37,9 +37,9 @@ negotiation: separating application logic from the rendering of responses makes
 writing an API an effortless task.
 
 Finally, as strong as Rails’s inspiration was, it still needed to be consistent
-with the practices and idioms of the Django and Python ecosystems. Dagny doesn’t
-use any metaclasses (yet), and the code is well-documented and readable by most
-Pythonista’s standards.
+with the practices and idioms of the Django and Python ecosystems. Dagny
+doesn’t use any metaclasses (yet), and the code is well-documented and readable
+by most Pythonista’s standards.
 
 
 ## Appetizer

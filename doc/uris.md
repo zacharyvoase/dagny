@@ -7,30 +7,42 @@ and familiar to many developers.
 You can also skip to the [URLconf reference](#urlconf).
 
 
-## Actions
+## Types of Resource
 
-This is the default resource URL scheme. Dagny also supports configurable
-[URL styles](#alternative_url_styles), but you should get familiar with the
-defaults before moving on to those.
+Dagny supports two types of resource: collections and singular resources.
+Collections are lists of uniquely-identifiable members, such as blog posts,
+users and products. Singular resources (a.k.a. singletons) are resources of
+which only one ever exists, and are typically tied to the currently logged-in
+user (e.g. the current user's profile, the user session, etc.).
+
+
+## The Default URL Scheme
+
+What follows is the default URL scheme for resources. Dagny also supports
+configurable [URL styles](#alternative_url_styles), but you should get familiar
+with the defaults before moving on to those.
 
 
 ### Collections
 
 The paths and their interaction with the standard HTTP methods are as follows:
 
-Method   | Path             | Action         | Behavior
--------- | ---------------- | -------------- | -------------------------
-`GET`    | `/users/`        | `User.index`   | List all users
-`GET`    | `/users/new/`    | `User.new`     | Display new user form
-`POST`   | `/users/`        | `User.create`  | Create new user
-`GET`    | `/users/1/`      | `User.show`    | Display user 1
-`GET`    | `/users/1/edit/` | `User.edit`    | Display edit user 1 form
-`PUT`    | `/users/1/`      | `User.update`  | Update user 1
-`DELETE` | `/users/1/`      | `User.destroy` | Delete user 1
+Name       | Path             | Method   | Action    | Behavior
+---------- | ---------------- | -------- | --------- | --------------------------------
+Collection | `/users/`        | `GET`    | `index`   | List all users
+           |                  | `POST`   | `create`  | Create a user
+Member     | `/users/1/`      | `GET`    | `show`    | Display user 1
+           |                  | `PUT`    | `update`  | Edit user 1
+           |                  | `POST`   | `update`  | Edit user 1
+           |                  | `DELETE` | `destroy` | Delete user 1
+New        | `/users/new/`    | `GET`    | `new`     | Display the new user form
+Edit       | `/users/1/edit/` | `GET`    | `edit`    | Display the edit form for user 1
 
 Note that not all of these actions are required; for example, you may not wish
 to provide `/users/new` and `/users/1/edit`, instead preferring to display the
-relevant forms under `/users/` and `/users/1/`.
+relevant forms under `/users/` and `/users/1/`. You may also support only
+certain HTTP methods at a given path; for example, only allowing `GET` on
+`/users/1/`.
 
 To work around the fact that `PUT` and `DELETE` are not typically supported in
 browsers, you can add a `_method` parameter to a `POST` form to override the
@@ -45,20 +57,20 @@ request method:
 
 ### Singular Resources
 
-Method   | Path             | Action            | Behavior
--------- | ---------------- | ----------------- | --------------------------
-`GET`    | `/account/`      | `Account.show`    | Display the account
-`GET`    | `/account/new/`  | `Account.new`     | Display new account form
-`POST`   | `/account/`      | `Account.create`  | Create the new account
-`GET`    | `/account/edit/` | `Account.edit`    | Display edit account form
-`PUT`    | `/account/`      | `Account.update`  | Update the account
-`DELETE` | `/account/`      | `Account.destroy` | Delete the account
+Name   | Path             | Method   | Action            | Behavior
+------ | ---------------- | -------- | ----------------- | -----------------------------
+Member | `/account/`      | `GET`    | `Account.show`    | Display the account
+       |                  | `POST`   | `Account.create`  | Create the new account
+       |                  | `PUT`    | `Account.update`  | Update the account
+       |                  | `DELETE` | `Account.destroy` | Delete the account
+New    | `/account/new/`  | `GET`    | `Account.new`     | Display the new account form
+Edit   | `/account/edit/` | `GET`    | `Account.edit`    | Display the edit account form
 
 The same point applies here: you don’t need to specify all of these actions
 every time.
 
 
-## URLconf
+## The URLconf
 
 ### Collections
 
@@ -77,8 +89,22 @@ ID:
 
     :::python
     urlpatterns = patterns('',
-        (r'^users/', resources('myapp.resources.User', id=r'[\w\-_]+')),
+        (r'^users/', resources('myapp.resources.User',
+                               id=r'[\w\-_]+')),
     )
+
+If you'd like the ID to appear as a named group in the regex (and hence be
+passed to your resource in `self.params` instead of as a positional argument),
+pass it as a two-tuple of `(param_name, regex)`:
+
+    :::python
+    urlpatterns = patterns('',
+        (r'^users/', resources('myapp.resources.User',
+                               id=('username', r'[\w\-_]+'))),
+    )
+
+This is especially useful if your URL already captures a parameter, as Django
+does not support mixing positional and keyword arguments in a URL.
 
 You can also restrict the actions that are routed to. Pass the `actions` keyword
 argument to specify which of these you would like to be available:
@@ -90,8 +116,8 @@ argument to specify which of these you would like to be available:
     )
 
 This is useful if you’re going to display the `new` and `edit` forms on the
-`index` and `show` pages, for example. It may also prevent naming clashes if
-you’re using slug identifiers in URIs.
+`index` and `show` pages, for example. Excluding `new` and `edit` may also
+prevent naming clashes if you’re using slug identifiers in URIs.
 
 
 ### Singular Resources
@@ -107,10 +133,10 @@ For this, use the `resource()` helper:
     )
 
 `resource()` is similar to `resources()`, but it only generates `show`, `new`
-and `edit`, and doesn’t take an `id` parameter of any sort.
+and `edit`, and doesn’t take an `id` parameter.
 
 
-### Reversing URLs
+## Reversing URLs
 
 `resource()` and `resources()` both attach names to the patterns they generate.
 This allows you to use the `{% url %}` templatetag, for example:
