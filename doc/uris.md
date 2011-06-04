@@ -119,6 +119,12 @@ This is useful if you’re going to display the `new` and `edit` forms on the
 `index` and `show` pages, for example. Excluding `new` and `edit` may also
 prevent naming clashes if you’re using slug identifiers in URIs.
 
+**N.B.:** most of the time, you won't need to use the `actions` keyword
+argument; if you just leave actions undefined, Dagny will automatically return
+the appropriate responses. The only case where `actions` would be useful is if
+those actions *are* defined on the resource but you don't want routes to them
+to be created.
+
 
 ### Singular Resources
 
