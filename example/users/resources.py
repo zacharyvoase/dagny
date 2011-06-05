@@ -79,6 +79,9 @@ class UserAtomPub(User):
 class UserRails(User):
     pass
 
+class Account(Resource):
+    pass
+
 
 def json_response(data):
     return HttpResponse(content=simplejson.dumps(data),

@@ -14,11 +14,17 @@ MEMBER_METHODS = {
     'PUT': 'update',
     'DELETE': 'destroy'
 }
+SINGLETON_METHODS = {
+    'GET': 'show',
+    'POST': 'update',
+    'PUT': 'update',
+    'DELETE': 'destroy'
+}
 EDIT_METHODS = {'GET': 'edit'}
 NEW_METHODS = {'GET': 'new'}
 
 
-class DefaultRoutingTest(TestCase):
+class RoutingTest(TestCase):
 
     def assert_resolves(self, url, func, *args, **kwargs):
         resolved = resolve(url)
@@ -30,6 +36,9 @@ class DefaultRoutingTest(TestCase):
             self.assertEqual(resolved.kwargs[kw], value)
         # Allows for further user-level assertions.
         return resolved
+
+
+class DefaultRoutingTest(RoutingTest):
 
     def test_index(self):
         self.assertEqual(reverse('User#index'), '/users/')
@@ -54,6 +63,26 @@ class DefaultRoutingTest(TestCase):
         self.assertEqual(reverse('User#edit', args=(1,)), '/users/1/edit/')
         self.assert_resolves('/users/1/edit/', resources.User,
                              '1', methods=EDIT_METHODS)
+
+
+class DefaultSingletonRoutingTest(RoutingTest):
+
+    def test_singleton(self):
+        self.assertEqual(reverse('Account#show'), '/account/')
+        self.assertEqual(reverse('Account#update'), '/account/')
+        self.assertEqual(reverse('Account#destroy'), '/account/')
+        self.assert_resolves('/account/', resources.Account,
+                             methods=SINGLETON_METHODS)
+
+    def test_singleton_new(self):
+        self.assertEqual(reverse('Account#new'), '/account/new/')
+        self.assert_resolves('/account/new/', resources.Account,
+                             methods=NEW_METHODS)
+
+    def test_singleton_edit(self):
+        self.assertEqual(reverse('Account#edit'), '/account/edit/')
+        self.assert_resolves('/account/edit/', resources.Account,
+                             methods=EDIT_METHODS)
 
 
 class AtomPubRoutingTest(DefaultRoutingTest):
