@@ -22,7 +22,8 @@ class URLStyle(object):
             'DELETE': 'destroy'
         },
         'new': {'GET': 'new'},
-        'edit': {'GET': 'edit'}
+        'edit': {'GET': 'edit'},
+        'singular_edit': {'GET': 'edit'},
     }
 
     def __call__(self, url, id_param):
