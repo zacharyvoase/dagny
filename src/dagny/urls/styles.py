@@ -5,9 +5,9 @@ class URLStyle(object):
 
     `URLStyle` can be used to create callables which will work for the
     interface defined in `dagny.urls.router.URLRouter`. Subclass and override
-    the `collection()`, `new()`, `member()`, `edit()` and `singular_edit()`
-    methods to customize your URLs. You can use one of the several defined
-    styles in this module as a template.
+    the `collection()`, `new()`, `member()`, `edit()`, `singleton()` and
+    `singleton_edit()` methods to customize your URLs. You can use one of the
+    several defined styles in this module as a template.
     """
 
     METHODS = {
@@ -23,7 +23,13 @@ class URLStyle(object):
         },
         'new': {'GET': 'new'},
         'edit': {'GET': 'edit'},
-        'singular_edit': {'GET': 'edit'},
+        'singleton': {
+            'GET': 'show',
+            'POST': 'update',
+            'PUT': 'update',
+            'DELETE': 'destroy'
+        },
+        'singleton_edit': {'GET': 'edit'},
     }
 
     def __call__(self, url, id_param):
@@ -67,7 +73,10 @@ class URLStyle(object):
     def edit(self, id_regex):
         raise NotImplementedError
 
-    def singular_edit(self):
+    def singleton(self):
+        raise NotImplementedError
+
+    def singleton_edit(self):
         raise NotImplementedError
 
 
@@ -96,7 +105,10 @@ class DjangoURLStyle(URLStyle):
     def edit(self, id_regex):
         return r'^(%s)/edit/$' % (id_regex,)
 
-    def singular_edit(self):
+    def singleton(self):
+        return r'^$'
+
+    def singleton_edit(self):
         return r'^edit/$'
 
 
@@ -128,7 +140,10 @@ class AtomPubURLStyle(URLStyle):
     def edit(self, id_regex):
         return r'^(%s)/edit$' % (id_regex,)
 
-    def singular_edit(self):
+    def singleton(self):
+        return r'^$'
+
+    def singleton_edit(self):
         return r'^edit$'
 
 
@@ -193,5 +208,8 @@ class RailsURLStyle(URLStyle):
     def edit(self, id_regex):
         return r'^/(%s)/edit/?$' % (id_regex,)
 
-    def singular_edit(self):
+    def singleton(self):
+        return r'^%s?/?$' % (self.FORMAT_EXTENSION_RE,)
+
+    def singleton_edit(self):
         return r'^/edit/?$'

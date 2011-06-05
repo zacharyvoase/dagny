@@ -36,7 +36,8 @@ class URLRouter(object):
             style.
         :param urls:
             A list of the URLs to define patterns for. Must be made up only of
-            'member', 'collection', 'new', 'edit' and 'singular_edit'.
+            'member', 'collection', 'new', 'edit', 'singleton' and
+            'singleton_edit'.
         """
 
         if actions is not None:
@@ -69,4 +70,4 @@ class URLRouter(object):
 
     def resource(self, resource_name, actions=None, name=None):
         return self._make_patterns(resource_name, '', name, actions,
-                                   ['member', 'new', 'singular_edit'])
+                                   ['singleton', 'new', 'singleton_edit'])
