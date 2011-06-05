@@ -72,13 +72,7 @@ class User(Resource):
         return redirect('User#index')
 
 
-# Stub resources for the routing tests.
-class UserAtomPub(User):
-    pass
-
-class UserRails(User):
-    pass
-
+# A stub resource for the routing tests.
 class Account(Resource):
     pass
 
