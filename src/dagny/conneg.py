@@ -60,7 +60,7 @@ def match_accept(header, shortcodes):
     """
 
     server_types = map(MIMETYPES.__getitem__, shortcodes)
-    client_types = MIMEAccept("Accept", header).best_matches()
+    client_types = MIMEAccept(header).best_matches()
     matches = []
     for mimetype in server_types:
         if mimetype in client_types:
