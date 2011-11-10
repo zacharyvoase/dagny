@@ -3,6 +3,7 @@
 from dagny import Resource, action
 from dagny.renderer import Skip
 from django.contrib.auth import forms, models
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 import simplejson
@@ -74,7 +75,17 @@ class User(Resource):
 
 # A stub resource for the routing tests.
 class Account(Resource):
-    pass
+
+    template_path_prefix = 'auth/'
+
+    @action
+    @action.deco(login_required)
+    def show(self):
+        return
+
+    @show.render.json
+    def show(self):
+        return json_response({'username': self.request.user.username})
 
 
 def json_response(data):
