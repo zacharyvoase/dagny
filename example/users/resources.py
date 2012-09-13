@@ -37,9 +37,7 @@ class User(Resource):
             self.user = self.form.save()
             return redirect('User#show', str(self.user.id))
 
-        response = self.new.render()
-        response.status_code = 403
-        return response
+        return self.new.render(status=403)
 
     @action
     def show(self, user_id):
@@ -62,9 +60,7 @@ class User(Resource):
             self.form.save()
             return redirect('User#show', str(self.user.id))
 
-        response = self.edit.render()
-        response.status_code = 403
-        return response
+        return self.edit.render(status=403)
 
     @action
     def destroy(self, user_id):

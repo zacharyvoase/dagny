@@ -54,6 +54,17 @@ class UserResourceTest(TestCase):
         eventual_user_count = models.User.objects.count()
         self.assertEqual(eventual_user_count, initial_user_count + 1)
 
+    def test_create_invalid(self):
+        initial_user_count = models.User.objects.count()
+        response = self.client.post("/users/", {
+            "username": "!!",
+            "password1": "foo",
+            "password2": "bar"
+        })
+        self.assertEqual(response.status_code, 403)
+        eventual_user_count = models.User.objects.count()
+        self.assertEqual(eventual_user_count, initial_user_count)
+
     def test_show(self):
         self.create_user()
 
