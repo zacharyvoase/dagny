@@ -199,8 +199,8 @@ class BoundAction(object):
             return response
         return self.render()
 
-    def render(self):
-        return self.action.render(self.resource)
+    def render(self, *args, **kwargs):
+        return self.action.render(self.resource, *args, **kwargs)
 
     @property
     def name(self):

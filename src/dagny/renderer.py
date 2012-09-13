@@ -135,12 +135,12 @@ class Renderer(object):
             return function
         return decorate
 
-    def __call__(self, action, resource):
+    def __call__(self, action, resource, *args, **kwargs):
         matches = self._match(action, resource)
 
         for shortcode in matches:
             try:
-                return self[shortcode](action, resource)
+                return self[shortcode](action, resource, *args, **kwargs)
             except Skip:
                 continue
 
@@ -150,7 +150,7 @@ class Renderer(object):
         # It's better to give an 'unacceptable' response than none at all.
         if 'html' not in matches and 'html' in self:
             try:
-                return self['html'](action, resource)
+                return self['html'](action, resource, *args, **kwargs)
             except Skip:
                 pass
 
@@ -281,8 +281,9 @@ class BoundRenderer(Renderer):
             return self._action
         return decorate
 
-    def __call__(self, resource):
-        return super(BoundRenderer, self).__call__(self._action, resource)
+    def __call__(self, resource, *args, **kwargs):
+        return super(BoundRenderer, self).__call__(self._action, resource,
+                                                   *args, **kwargs)
 
 
 def resource_method_wrapper(method):
